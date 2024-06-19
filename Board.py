@@ -1,5 +1,5 @@
 import numpy as np
-from Pieces import *
+from pieces import *
 
 """
 -------------------------
@@ -31,14 +31,20 @@ class Board:
     """
 
     def __init__(self, fen_string: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
-        self.board = np.full((8, 8), None)
-
-        if fen_string is None:
-            # Setup default starting position
-            self.to_move = 1
-            pass
+        self.board = self.parse_fen(fen_string)
 
     def parse_fen(self, fen_string: str) -> np.ndarray:
+        """
+        Method to parse FEN string
+
+        Args:
+            fen_string (str): Input FEN string
+        
+        Returns:
+            board (np.ndarray): 2D array containing the Pieces class objects representing the board state
+        """
+
+        board = np.full((8, 8), None)
         components = fen_string.split(" ")
 
         if(len(components) != 6):
@@ -47,10 +53,56 @@ class Board:
         self.to_move = components[1]
         self.castling = components[2]
         self.en_passant = components[3]
-        self.fifty_move = components[4]
-        self.moves = components[5]
+        self.fifty_move = int(components[4])
+        self.moves = int(components[5])
+
+        board_rows = components[0].split("/")
+        assert len(board_rows) == 8
+
+        for i in range(len(board_rows)):
+            row = board_rows[i]
+            j = 0
+            for char in row:
+                if char in set("12345678"):
+                    j += int(char)
+                elif char in set("pnbrqkPNBRQK"):
+                    if char == "p":
+                        board[i][j] = Pawn(-1)
+                    elif char == "n":
+                        board[i][j] = Knight(-1)
+                    elif char == "b":
+                        board[i][j] = Bishop(-1)
+                    elif char == "r":
+                        board[i][j] = Rook(-1)
+                    elif char == "q":
+                        board[i][j] = Queen(-1)
+                    elif char == "k":
+                        board[i][j] = King(-1)
+                    elif char == "P":
+                        board[i][j] = Pawn(1)
+                    elif char == "N":
+                        board[i][j] = Knight(1)
+                    elif char == "B":
+                        board[i][j] = Bishop(1)
+                    elif char == "R":
+                        board[i][j] = Rook(1)
+                    elif char == "Q":
+                        board[i][j] = Queen(1)
+                    elif char == "K":
+                        board[i][j] = King(1)
+
+                    j += 1
+                else:
+                    raise ValueError(f"FEN String contains unexpected value: {char}")
+                
+        return board
+
 
     def show_board(self) -> None:
+        """
+        Method to display the current board state
+        """
+
         print("-" * 25)
         for row in self.board:
             for piece in row:
@@ -88,6 +140,8 @@ class Board:
                         print("|BK", end = "")
             print("|")
             print("-" * 25)
+        print("BLACK TO MOVE" if self.to_move == -1 else "WHITE TO MOVE")
+        print("MOVE NUMBER: " + str(self.moves))
 
     @property
     def to_move(self) -> int:
@@ -141,7 +195,7 @@ class Board:
     
     @fifty_move.setter
     def fifty_move(self, num_moves: int) -> None:
-        if(not isinstance(num_moves, int) or int < 0):
+        if(not isinstance(num_moves, int) or num_moves < 0):
             raise ValueError(f"Expected non-negative integer for 'fifty_move', instead got: {num_moves}")
         else:
             self._fifty_move = num_moves
@@ -152,7 +206,11 @@ class Board:
     
     @moves.setter
     def moves(self, num_moves:int):
-        if(not isinstance(num_moves, int) or int < 1):
+        if(not isinstance(num_moves, int) or num_moves < 1):
             raise ValueError(f"Expected positive integer for 'moves', instead got: {num_moves}")
         else:
             self._moves = num_moves
+
+if __name__ == "__main__":
+    board = Board()
+    board.show_board()

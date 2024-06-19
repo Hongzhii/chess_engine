@@ -80,53 +80,15 @@ class Queen(Piece):
 class Rook(Piece):
     """
     Implementation of the Rook piece
-
-    Attributes:
-        _never_moved (int): Records if the piece has moved before (0 or 1)
     """
 
-    def __init__(self, color: int, never_moved: int):
+    def __init__(self, color: int):
         super().__init__(color, 5.0)
-        self.never_moved = never_moved
-
-    @property
-    def never_moved(self) -> int:
-        """Returns 0 or 1 depending on whether or not piece has moved"""
-        return self._never_moved
-    
-    @never_moved.setter
-    def never_moved(self, never_moved: int) -> None:
-        if never_moved not in {0, 1}:
-            raise TypeError(
-                "The 'never_moved' attribute must be either 0 (moved) or 1 (never moved)\n" + 
-                f"Got unexpected value: {never_moved}"
-            )
-        else:
-            self._never_moved = never_moved
 
 class King(Piece):
     """
     Implementation of the King piece
-
-    Attributes:
-        _never_moved (int): Records if the piece has moved before (0 or 1)
     """
 
-    def __init__(self, color: int, never_moved: int):
+    def __init__(self, color: int):
         super().__init__(color, 0.0)
-        self.never_moved = never_moved
-
-    @property
-    def never_moved(self) -> int:
-        """Returns 0 or 1 depending on whether or not piece has moved"""
-        return self._never_moved
-    
-    @never_moved.setter
-    def never_moved(self, never_moved: int) -> None:
-        if never_moved not in {0, 1}:
-            raise TypeError(
-                "The 'never_moved' attribute must be either 0 (moved) or 1 (never moved)\n" + 
-                f"Got unexpected value: {never_moved}"
-            )
-        else:
-            self._never_moved = never_moved
