@@ -38,11 +38,17 @@ class Board:
             self.to_move = 1
             pass
 
-    def parse_fen(fen_string: str) -> np.ndarray:
+    def parse_fen(self, fen_string: str) -> np.ndarray:
         components = fen_string.split(" ")
 
         if(len(components) != 6):
             raise ValueError(f"Invalid FEN string, expected 6 components instead got {len(components)}")
+        
+        self.to_move = components[1]
+        self.castling = components[2]
+        self.en_passant = components[3]
+        self.fifty_move = components[4]
+        self.moves = components[5]
 
     def show_board(self) -> None:
         print("-" * 25)
@@ -89,14 +95,14 @@ class Board:
         return self._to_move
     
     @to_move.setter
-    def to_move(self, player: int) -> None:
-        if player not in {-1, 1}:
+    def to_move(self, player: str) -> None:
+        if player not in {"w", "b"}:
             raise ValueError(
-                "Player value should be either -1 or 1\n" + 
+                "Player value should be either w or b\n" + 
                 f"Got unexpected value: {player}"
             )
         else:
-            self._to_move = player
+            self._to_move = -1 if player == "b" else 1
 
     @property
     def castling(self) -> str:
@@ -120,9 +126,33 @@ class Board:
     
     @en_passant.setter
     def en_passant(self, state: str) -> None:
-        if len(state) != 2:
+        if(state == "-"):
+            self._en_passant = state
+        elif len(state) != 2:
             raise ValueError(f"Invalid en passant string length, expected length 2 but got string: {state}")
         elif (state[0] not in set("abcdefgh") or state[1] not in set("12345678")):
             raise ValueError(f"Invalid en passant string: {state}")
         else:
             self._en_passant = state
+
+    @property
+    def fifty_move(self) -> int:
+        return self._fifty_move
+    
+    @fifty_move.setter
+    def fifty_move(self, num_moves: int) -> None:
+        if(not isinstance(num_moves, int) or int < 0):
+            raise ValueError(f"Expected non-negative integer for 'fifty_move', instead got: {num_moves}")
+        else:
+            self._fifty_move = num_moves
+
+    @property
+    def moves(self) -> int:
+        return self._moves
+    
+    @moves.setter
+    def moves(self, num_moves:int):
+        if(not isinstance(num_moves, int) or int < 1):
+            raise ValueError(f"Expected positive integer for 'moves', instead got: {num_moves}")
+        else:
+            self._moves = num_moves
