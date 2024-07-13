@@ -30,7 +30,10 @@ class Board:
         board (np.array): A 2D array representing the game state.
     """
 
-    def __init__(self, fen_string: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
+    def __init__(
+        self, 
+        fen_string: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    ):
         self.board = self.parse_fen(fen_string)
 
     def parse_fen(self, fen_string: str) -> np.ndarray:
