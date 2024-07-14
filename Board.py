@@ -148,6 +148,8 @@ class Board:
         Method to display the current board state
         """
 
+        self.validate()
+
         print("-" * 17)
         for row_num in range(8):
             for col_num in range(8):
@@ -230,5 +232,4 @@ class Board:
 
 if __name__ == "__main__":
     board = Board()
-    board.validate()
     board.show()
