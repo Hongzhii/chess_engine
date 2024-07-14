@@ -1,9 +1,10 @@
 import numpy as np
 from pieces import *
+from bitboard import BitBoard
 
 """
--------------------------
-|BR|BN|BB|BQ|BK|BB|BN|BR|
+-----------------
+|R|N|B|Q|K|B|N|R|
 -------------------------
 |BP|BP|BP|BP|BP|BP|BP|BP|
 -------------------------
@@ -27,30 +28,46 @@ class Board:
 
     Attributes:
         to_move (int): The player to move next. (1 or -1)
-        board (np.array): A 2D array representing the game state.
+        castling (str): KQkq type string to specify King/Queenside castling
+        en_passant (str): Specify En-Passant capturable square
+        fifty_move (int): Number of moves since last capture/pawn advance
+        moves (int): Number of moves in total
+        black_positions (dict): Stores bitboards for all black pieces
+        white_positions (dict): Stores bitboards for all white pieces
     """
 
     def __init__(
         self, 
         fen_string: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
     ):
-        self.board = self.parse_fen(fen_string)
-
-    def parse_fen(self, fen_string: str) -> np.ndarray:
         """
-        Method to parse FEN string
+        Constructor for the Board class by parsing FEN string
 
         Args:
-            fen_string (str): Input FEN string
-        
-        Returns:
-            board (np.ndarray): 2D array containing the Pieces class objects representing the board state
+            fen_string (str): FEN string representing the board state
         """
 
-        board = np.full((8, 8), None)
+        self.black_positions = {
+            "p": BitBoard(),
+            "n": BitBoard(),
+            "b": BitBoard(),
+            "r": BitBoard(),
+            "q": BitBoard(),
+            "k": BitBoard()
+        }
+
+        self.white_positions = {
+            "p": BitBoard(),
+            "n": BitBoard(),
+            "b": BitBoard(),
+            "r": BitBoard(),
+            "q": BitBoard(),
+            "k": BitBoard()
+        }
+
         components = fen_string.split(" ")
 
-        if(len(components) != 6):
+        if len(components) != 6:
             raise ValueError(f"Invalid FEN string, expected 6 components instead got {len(components)}")
         
         self.to_move = components[1]
@@ -68,81 +85,78 @@ class Board:
             for char in row:
                 if char in set("12345678"):
                     j += int(char)
-                elif char in set("pnbrqkPNBRQK"):
-                    if char == "p":
-                        board[i][j] = Pawn(-1)
-                    elif char == "n":
-                        board[i][j] = Knight(-1)
-                    elif char == "b":
-                        board[i][j] = Bishop(-1)
-                    elif char == "r":
-                        board[i][j] = Rook(-1)
-                    elif char == "q":
-                        board[i][j] = Queen(-1)
-                    elif char == "k":
-                        board[i][j] = King(-1)
-                    elif char == "P":
-                        board[i][j] = Pawn(1)
-                    elif char == "N":
-                        board[i][j] = Knight(1)
-                    elif char == "B":
-                        board[i][j] = Bishop(1)
-                    elif char == "R":
-                        board[i][j] = Rook(1)
-                    elif char == "Q":
-                        board[i][j] = Queen(1)
-                    elif char == "K":
-                        board[i][j] = King(1)
-
-                    j += 1
+                elif char in set("pnbrqk"):
+                    self.black_positions[char].set(i, j)
+                elif char in set("PNBRQK"):
+                    char = char.lower()
+                    self.white_positions[char].set(i, j)
                 else:
-                    raise ValueError(f"FEN String contains unexpected value: {char}")
-                
-        return board
+                    raise ValueError(f"Unexpected piece type encountered: {char}")
+                j += 1
+
+    def validate(self) -> None:
+        """
+        Method to ensure that the board state is valid
+
+        Returns:
+            result (int): 1 if valid, 0 otherwise
+        """
+
+        # Check for overlapping pieces
+        num_pieces = 0
+        union_bitboard = 0
+
+        for k, v in self.black_positions.items():
+            piece_bitboard = bin(v.bitboard)
+            num_pieces += piece_bitboard.count("1")
+            union_bitboard = union_bitboard | int(piece_bitboard, base=2)
+
+        for k, v in self.white_positions.items():
+            piece_bitboard = bin(v.bitboard)
+            num_pieces += piece_bitboard.count("1")
+            union_bitboard = union_bitboard | int(piece_bitboard, base=2)
+
+        assert num_pieces == bin(union_bitboard).count("1"), "Overlapping pieces detected"
+
+    def get_piece(self, row, col) -> str:
+        """
+        Retrieves piece residing on the specified square
+
+        Args:
+            row (int): Specifies the row number
+            col (int): Specifies the column number
+
+        Returns:
+            piece (str): Single letter representation of the piece
+        """
+
+        mask = 1 << 63 - (8 * row + col)
+
+        for piece in self.black_positions:
+            if mask & self.black_positions[piece].bitboard:
+                return piece
+            
+        for piece in self.white_positions:
+            if mask & self.white_positions[piece].bitboard:
+                return piece.upper()
+            
+        return " "
 
 
-    def show_board(self) -> None:
+    def show(self) -> None:
         """
         Method to display the current board state
         """
 
-        print("-" * 25)
-        for row in self.board:
-            for piece in row:
-                if piece is None:
-                    print("|  ", end = "")
-                elif isinstance(piece, Pawn):
-                    if piece.color == 1:
-                        print("|WP", end = "")
-                    else:
-                        print("|BP", end = "")
-                elif isinstance(piece, Knight):
-                    if piece.color == 1:
-                        print("|WN", end = "")
-                    else:
-                        print("|BN", end = "")
-                elif isinstance(piece, Bishop):
-                    if piece.color == 1:
-                        print("|WB", end = "")
-                    else:
-                        print("|BB", end = "")
-                elif isinstance(piece, Rook):
-                    if piece.color == 1:
-                        print("|WR", end = "")
-                    else:
-                        print("|BR", end = "")
-                elif isinstance(piece, Queen):
-                    if piece.color == 1:
-                        print("|WQ", end = "")
-                    else:
-                        print("|BQ", end = "")
-                elif isinstance(piece, King):
-                    if piece.color == 1:
-                        print("|WK", end = "")
-                    else:
-                        print("|BK", end = "")
+        print("-" * 17)
+        for row_num in range(8):
+            for col_num in range(8):
+                print("|", end="")
+                print(self.get_piece(row_num, col_num), end="")
             print("|")
-            print("-" * 25)
+
+            print("-" * 17)
+
         print("BLACK TO MOVE" if self.to_move == -1 else "WHITE TO MOVE")
         print("MOVE NUMBER: " + str(self.moves))
 
@@ -216,4 +230,5 @@ class Board:
 
 if __name__ == "__main__":
     board = Board()
-    board.show_board()
+    board.validate()
+    board.show()
