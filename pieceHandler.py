@@ -1,3 +1,5 @@
+import parsers
+import FENs
 from board import Board
 from bitboard import BitBoard
 from typing import Tuple
@@ -44,22 +46,33 @@ class PieceHandler:
 
         bitboard = BitBoard()
 
-        if color == -1:
-            bitboard.set(max(position[0] - 1, 0), position[1])
-            bitboard.set(max(position[0] - 2, 0), position[1])
-        else:
-            bitboard.set(min(position[0] + 1, 7), position[1])
-            bitboard.set(min(position[0] + 2, 7), position[1])
+        all_pieces = board.get_color_bitboard(1) + board.get_color_bitboard(-1)
 
         if color == -1:
-            candidate_locations = [
-                (position[0] - 1, position[1] + 1),
-                (position[0] - 1, position[1] - 1)
-            ]
+            if not all_pieces.get(position[0] + 1, position[1]):
+                bitboard.set(position[0] + 1, position[1])
+            
+            if position[0] == 1 and \
+                    not all_pieces.get(position[0] + 2, position[1]):
+                bitboard.set(position[0] + 2, position[1])
         else:
+            if not all_pieces.get(position[0] - 1, position[1]):
+                bitboard.set(position[0] - 1, position[1])
+            
+            if position[0] == 1 and \
+                    not all_pieces.get(position[0] - 2, position[1]):
+                bitboard.set(position[0] - 2, position[1])
+
+        # List possible captures
+        if color == -1:
             candidate_locations = [
                 (position[0] + 1, position[1] + 1),
                 (position[0] + 1, position[1] - 1)
+            ]
+        else:
+            candidate_locations = [
+                (position[0] - 1, position[1] + 1),
+                (position[0] - 1, position[1] - 1)
             ]
 
         capture_bitboard = BitBoard()
@@ -69,9 +82,15 @@ class PieceHandler:
                 capture_bitboard.set(location[0], location[1])
 
         opp_bitboard = board.get_color_bitboard(color * -1)
+
+        # Handle en-passant
+        ep_position = parsers.alphanumeric_to_index(board.en_passant)
+        if ep_position is not None:
+            opp_bitboard.set(ep_position[0], ep_position[1])
+
         capture_bitboard = capture_bitboard & opp_bitboard
 
-        bitboard += opp_bitboard
+        bitboard += capture_bitboard
 
         return bitboard
 
@@ -284,9 +303,17 @@ class PieceHandler:
 
 if __name__ == "__main__":
     handler = PieceHandler()
-    board = Board("r1bqkb1r/pp4pp/2n2n2/2pppp2/2PPPP2/2N2N2/PP4PP/R1BQKB1R w KQkq - 4 4")
+    print("======EN PASSANT TEST CASE======")
+    board = Board(FENs.ENPASSANT_FEN)
     board.show()
+    
+    print("Pawn Moves:")
+    print("(En-passant pawn)")
+    handler.get_moves(board, (3, 4), "P").show()
 
+    print("======FOUR KNIGHTS TESTCASE======")
+    board = Board(FENs.FOURKNIGHTS_FEN)
+    board.show()
     print("Knight Moves:")
     handler.get_moves(board, (5, 5), "N").show()
     handler.get_moves(board, (5, 2), "N").show()
