@@ -2,6 +2,7 @@ from board import Board
 from bitboard import BitBoard
 from typing import Tuple
 
+
 class PieceHandler:
     """
     A class to retrieve all legal moves for a given piece on a board.
@@ -55,7 +56,7 @@ class PieceHandler:
             bitboard.set(min(position[0] + 2, 7), position[1])
 
         return bitboard
-    
+
     @classmethod
     def _get_knight_bitboard(
         cls,
@@ -79,7 +80,7 @@ class PieceHandler:
                 bitboard.set(location[0], location[1])
 
         return bitboard
-    
+
     @classmethod
     def _get_bishop_bitboard(
         cls,
@@ -128,7 +129,6 @@ class PieceHandler:
                 break
 
             bitboard.set(position[0], position[1])
-
 
     @classmethod
     def _get_rook_bitboard(
@@ -183,4 +183,28 @@ class PieceHandler:
         bishop_component = cls._get_bishop_bitboard(position)
         rook_component = cls._get_rook_bitboard(position)
 
-        
+        return bishop_component + rook_component
+
+    @classmethod
+    def _get_king_bitboard(
+        cls,
+        position: Tuple[int, int]
+    ) -> BitBoard:
+        bitboard = BitBoard()
+
+        candidate_locations = [
+            (position[0] + 1, position[1]),
+            (position[0] - 1, position[1]),
+            (position[0], position[1] + 1),
+            (position[0], position[1] - 1),
+            (position[0] + 1, position[1] + 1),
+            (position[0] + 1, position[1] - 1),
+            (position[0] - 1, position[1] + 1),
+            (position[0] - 1, position[1] - 1),
+        ]
+
+        for location in candidate_locations:
+            if cls._in_range(location):
+                bitboard.set(location)
+
+        return bitboard
