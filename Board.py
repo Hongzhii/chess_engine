@@ -1,4 +1,5 @@
 import numpy as np
+import FENs
 from bitboard import BitBoard
 
 """
@@ -20,7 +21,6 @@ from bitboard import BitBoard
 |WR|WN|WB|WQ|WK|WB|WN|WR|
 -------------------------
 """
-STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 
 class Board:
@@ -39,7 +39,7 @@ class Board:
 
     def __init__(
         self,
-        fen_string: str = STARTING_FEN
+        fen_string: str = FENs.STARTING_FEN
     ):
         """
         Constructor for the Board class by parsing FEN string
@@ -107,7 +107,7 @@ class Board:
             color (int): Specifies color of desired pieces
 
         Returns:
-            bitboard (BitBoard): Bitboard object containing piece 
+            bitboard (BitBoard): Bitboard object containing piece
                 location information
         """
         bitboard = BitBoard()
@@ -255,5 +255,5 @@ class Board:
 
 
 if __name__ == "__main__":
-    board = Board("r1bqkb1r/pppp1ppp/2n2n2/4p3/4P3/2N2N2/PPPP1PPP/R1BQKB1R w KQkq - 4 4")
+    board = Board(FENs.FOURKNIGHTS_FEN)
     board.show()

@@ -51,14 +51,14 @@ class PieceHandler:
         if color == -1:
             if not all_pieces.get(position[0] + 1, position[1]):
                 bitboard.set(position[0] + 1, position[1])
-            
+
             if position[0] == 1 and \
                     not all_pieces.get(position[0] + 2, position[1]):
                 bitboard.set(position[0] + 2, position[1])
         else:
             if not all_pieces.get(position[0] - 1, position[1]):
                 bitboard.set(position[0] - 1, position[1])
-            
+
             if position[0] == 1 and \
                     not all_pieces.get(position[0] - 2, position[1]):
                 bitboard.set(position[0] - 2, position[1])
@@ -306,7 +306,7 @@ if __name__ == "__main__":
     print("======EN PASSANT TEST CASE======")
     board = Board(FENs.ENPASSANT_FEN)
     board.show()
-    
+
     print("Pawn Moves:")
     print("(En-passant pawn)")
     handler.get_moves(board, (3, 4), "P").show()
