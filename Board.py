@@ -1,5 +1,4 @@
 import numpy as np
-from pieces import *
 from bitboard import BitBoard
 
 """
@@ -21,6 +20,8 @@ from bitboard import BitBoard
 |WR|WN|WB|WQ|WK|WB|WN|WR|
 -------------------------
 """
+STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
 
 class Board:
     """
@@ -37,8 +38,8 @@ class Board:
     """
 
     def __init__(
-        self, 
-        fen_string: str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        self,
+        fen_string: str = STARTING_FEN
     ):
         """
         Constructor for the Board class by parsing FEN string
@@ -69,7 +70,7 @@ class Board:
 
         if len(components) != 6:
             raise ValueError(f"Invalid FEN string, expected 6 components instead got {len(components)}")
-        
+
         self.to_move = components[1]
         self.castling = components[2]
         self.en_passant = components[3]
@@ -108,11 +109,13 @@ class Board:
 
         for k, v in self.black_positions.items():
             piece_bitboard = bin(v.bitboard)
+            show_bitboard(piece_bitboard)
             num_pieces += piece_bitboard.count("1")
             union_bitboard = union_bitboard | int(piece_bitboard, base=2)
 
         for k, v in self.white_positions.items():
             piece_bitboard = bin(v.bitboard)
+            show_bitboard(piece_bitboard)
             num_pieces += piece_bitboard.count("1")
             union_bitboard = union_bitboard | int(piece_bitboard, base=2)
 
@@ -135,13 +138,12 @@ class Board:
         for piece in self.black_positions:
             if mask & self.black_positions[piece].bitboard:
                 return piece
-            
+
         for piece in self.white_positions:
             if mask & self.white_positions[piece].bitboard:
                 return piece.upper()
-            
-        return " "
 
+        return " "
 
     def show(self) -> None:
         """
@@ -166,12 +168,12 @@ class Board:
     def to_move(self) -> int:
         """Get current player move"""
         return self._to_move
-    
+
     @to_move.setter
     def to_move(self, player: str) -> None:
         if player not in {"w", "b"}:
             raise ValueError(
-                "Player value should be either w or b\n" + 
+                "Player value should be either w or b\n" +
                 f"Got unexpected value: {player}"
             )
         else:
@@ -180,15 +182,15 @@ class Board:
     @property
     def castling(self) -> str:
         return self._castling
-    
+
     @castling.setter
     def castling(self, state: str) -> None:
         if state not in {
-            "----", "---q", "--k-", "--kq", 
-            "-Q--", "-Q-q", "-Qk-", "-Qkq", 
+            "----", "---q", "--k-", "--kq",
+            "-Q--", "-Q-q", "-Qk-", "-Qkq",
             "K---", "K--q", "K-k-", "K-kq",
             "KQ--", "KQ-q", "KQk-", "KQkq"
-            }:
+        }:
             raise ValueError(f"Invalid castling state: {state}")
         else:
             self._castling = state
@@ -196,14 +198,15 @@ class Board:
     @property
     def en_passant(self) -> str:
         return self._en_passant
-    
+
     @en_passant.setter
     def en_passant(self, state: str) -> None:
         if(state == "-"):
             self._en_passant = state
         elif len(state) != 2:
             raise ValueError(f"Invalid en passant string length, expected length 2 but got string: {state}")
-        elif (state[0] not in set("abcdefgh") or state[1] not in set("12345678")):
+        elif (state[0] not in set("abcdefgh") or
+              state[1] not in set("12345678")):
             raise ValueError(f"Invalid en passant string: {state}")
         else:
             self._en_passant = state
@@ -211,7 +214,7 @@ class Board:
     @property
     def fifty_move(self) -> int:
         return self._fifty_move
-    
+
     @fifty_move.setter
     def fifty_move(self, num_moves: int) -> None:
         if(not isinstance(num_moves, int) or num_moves < 0):
@@ -222,14 +225,15 @@ class Board:
     @property
     def moves(self) -> int:
         return self._moves
-    
+
     @moves.setter
-    def moves(self, num_moves:int):
+    def moves(self, num_moves: int):
         if(not isinstance(num_moves, int) or num_moves < 1):
             raise ValueError(f"Expected positive integer for 'moves', instead got: {num_moves}")
         else:
             self._moves = num_moves
 
+
 if __name__ == "__main__":
-    board = Board()
+    board = Board("r1bqkb1r/pppp1ppp/2n2n2/4p3/4P3/2N2N2/PPPP1PPP/R1BQKB1R w KQkq - 4 4")
     board.show()
