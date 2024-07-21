@@ -1,5 +1,6 @@
 from typing import Optional
 
+
 class BitBoard:
     """
     Bitboard class data class that contains information about the location of
@@ -16,16 +17,34 @@ class BitBoard:
         else:
             self.bitboard = int('0b0', 2)
 
-    def add(self, bitboard: 'BitBoard') -> None:
-        """
-        Performs binary OR operation accross two bitboards and applies the
-        result to the current bitboard.
-
-        Args:
-            bitboard (BitBoard): BitBoard to be added to current bitboard
-        """
-
+    def __or__(self, bitboard: 'BitBoard') -> 'BitBoard':
         self.bitboard = self.bitboard | bitboard.bitboard
+        return self.__copy__()
+
+    def __and__(self, bitboard: 'BitBoard') -> 'BitBoard':
+        self.bitboard = self.bitboard & bitboard.bitboard
+        return self.__copy__()
+
+    def __xor__(self, bitboard: 'BitBoard') -> 'BitBoard':
+        self.bitboard = self.bitboard ^ bitboard.bitboard
+        return self.__copy__()
+
+    def __invert__(self, bitboard: 'BitBoard') -> 'BitBoard':
+        self.bitboard = ~self.bitboard
+        return self.__copy__()
+
+    def __iadd__(self, bitboard: 'BitBoard') -> 'BitBoard':
+        self = self | bitboard
+        return self
+
+    def __isub__(self, bitboard: 'BitBoard') -> 'BitBoard':
+        # Remove any bits that are not present in 'self' bitboard
+        bitboard = bitboard & self
+        self = self ^ bitboard
+        return self
+
+    def __copy__(self):
+        return BitBoard(self)
 
     def set(self, row: int, col: int) -> None:
         """
@@ -127,7 +146,7 @@ if __name__ == "__main__":
     bitboard.show()
     bitboard_copy.show()
 
-    bitboard.add(bitboard_copy)
+    bitboard += bitboard_copy
     bitboard.show()
 
     assert bitboard.get_num_pieces() == 3, f"{bitboard.get_num_pieces()}"
