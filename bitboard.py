@@ -32,6 +32,13 @@ class BitBoard:
     def __invert__(self, bitboard: 'BitBoard') -> 'BitBoard':
         self.bitboard = ~self.bitboard
         return self.__copy__()
+    
+    def __add__(self, bitboard: 'BitBoard') -> 'BitBoard':
+        return self | bitboard
+    
+    def __sub__(self, bitboard: 'BitBoard') -> 'BitBoard':
+        bitboard = self & bitboard
+        return self ^ bitboard
 
     def __iadd__(self, bitboard: 'BitBoard') -> 'BitBoard':
         self = self | bitboard

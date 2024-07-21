@@ -98,15 +98,36 @@ class Board:
                     raise ValueError(f"Unexpected piece type encountered: {char}")
                 j += 1
 
-    def validate(self) -> None:
+    def get_color_bitboard(self, color: int) -> BitBoard:
         """
-        Method to ensure that the board state is valid
+        Returns bitboard specifying the location of all pieces of a
+        specified color
+
+        Args:
+            color (int): Specifies color of desired pieces
+
+        Returns:
+            bitboard (BitBoard): Bitboard object containing piece 
+                location information
+        """
+        bitboard = BitBoard()
+
+        if color == -1:
+            for piece in self.black_positions:
+                bitboard += self.black_positions[piece]
+        else:
+            for piece in self.white_positions:
+                bitboard += self.white_positions[piece]
+
+        return bitboard
+
+    def check_overlap(self) -> None:
+        """
+        Method to ensure that there is no overlapping pieces
 
         Returns:
             result (int): 1 if valid, 0 otherwise
         """
-
-        # Check for overlapping pieces
         num_pieces = 0
         union_bitboard = BitBoard()
 
@@ -120,7 +141,7 @@ class Board:
 
         assert num_pieces == union_bitboard.get_num_pieces(), f"Overlapping pieces detected: {num_pieces} {union_bitboard.get_num_pieces()}"
 
-    def get_piece(self, row, col) -> str:
+    def get_piece(self, row: int, col: int) -> str:
         """
         Retrieves piece residing on the specified square
 
@@ -149,7 +170,7 @@ class Board:
         Method to display the current board state
         """
 
-        self.validate()
+        self.check_overlap()
 
         print("-" * 17)
         for row_num in range(8):
