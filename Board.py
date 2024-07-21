@@ -81,14 +81,17 @@ class Board:
         assert len(board_rows) == 8
 
         for i in range(len(board_rows)):
+            assert i < 8, f"Got i: {i}"
             row = board_rows[i]
             j = 0
             for char in row:
                 if char in set("12345678"):
-                    j += int(char)
+                    j += (int(char) - 1)  # Prevent double incrementing j
                 elif char in set("pnbrqk"):
+                    assert j < 8, f"Got (i, j): ({i}, {j}) {row}"
                     self.black_positions[char].set(i, j)
                 elif char in set("PNBRQK"):
+                    assert j < 8, f"Got (i, j): ({i}, {j})"
                     char = char.lower()
                     self.white_positions[char].set(i, j)
                 else:
@@ -105,21 +108,17 @@ class Board:
 
         # Check for overlapping pieces
         num_pieces = 0
-        union_bitboard = 0
+        union_bitboard = BitBoard()
 
         for k, v in self.black_positions.items():
-            piece_bitboard = bin(v.bitboard)
-            show_bitboard(piece_bitboard)
-            num_pieces += piece_bitboard.count("1")
-            union_bitboard = union_bitboard | int(piece_bitboard, base=2)
+            union_bitboard += v
+            num_pieces += v.get_num_pieces()
 
         for k, v in self.white_positions.items():
-            piece_bitboard = bin(v.bitboard)
-            show_bitboard(piece_bitboard)
-            num_pieces += piece_bitboard.count("1")
-            union_bitboard = union_bitboard | int(piece_bitboard, base=2)
+            union_bitboard += v
+            num_pieces += v.get_num_pieces()
 
-        assert num_pieces == bin(union_bitboard).count("1"), "Overlapping pieces detected"
+        assert num_pieces == union_bitboard.get_num_pieces(), f"Overlapping pieces detected: {num_pieces} {union_bitboard.get_num_pieces()}"
 
     def get_piece(self, row, col) -> str:
         """
