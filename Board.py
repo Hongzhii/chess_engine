@@ -1,5 +1,6 @@
 import numpy as np
 import FENs
+import parsers
 from bitboard import BitBoard
 from pieceHandler import PieceHandler
 
@@ -31,7 +32,7 @@ class Board:
     A class to represent any given game state.
 
     Attributes:
-        pieceHandler (PieceHandler): PieceHandler utility class to help get moves
+        pieceHandler (PieceHandler): PieceHandler utility class to get moves
         to_move (int): The player to move next. (1 or -1)
         castling (str): KQkq type string to specify King/Queenside castling
         en_passant (str): Specify En-Passant capturable square
@@ -100,7 +101,7 @@ class Board:
                     char = char.lower()
                     self.white_positions[char].set(i, j)
                 else:
-                    raise ValueError(f"Unexpected piece type encountered: {char}")
+                    raise ValueError(f"Unexpected piece type: {char}")
                 j += 1
 
     def get_color_bitboard(self, color: int) -> BitBoard:
@@ -170,6 +171,51 @@ class Board:
 
         return " "
 
+    def handle_enpassant(
+        self,
+        start_coord: Tuple[int, int],
+        end_coord: Tuple[int, int],
+        friendly_pieces: dict,
+        opponent_pieces: dict
+    ) -> bool:
+        """
+        Helper method to handle en-passant cases:
+            1. Set en_passant bitboard for two square advances
+            2. Remove the correct opponent piece for en-passant captures
+
+        Args:
+            start_coord (Tuple): Piece start coordinates
+            end_coord (Tuple): Piece end coordinates
+            friendly_pieces (dict): Locations of friendly pieces
+            opponent_pieces (dict): Locations of opponent pieces
+
+        Returns:
+            moved (bool): Represents whether or not pawn move was handled by
+                en passant helper method
+        """
+        moved = False
+
+        start_bitboard = BitBoard(coordinates=[start_coord])
+        end_bitboard = BitBoard(coordinates=[end_coord])
+
+        if abs(start_coord[0] - end_coord[0]) == 2:
+            # Update friendly pieces
+            friendly_pieces["p"] -= start_bitboard
+            friendly_pieces["p"] += end_bitboard
+            moved = True
+        elif self.en_passant.get(*end_coord):
+            # Update friendly pieces
+            friendly_pieces["p"] -= start_bitboard
+            friendly_pieces["p"] += end_bitboard
+
+            # Remove captured piece
+            capture_bitboard = BitBoard(
+                coordinates=[(end_coord[0] + self.to_move, end_coord[1])]
+            )
+            opponent_pieces["p"] -= capture_bitboard
+            moved = True
+        return moved
+
     def move(
         self,
         start_coord: Tuple[int, int],
@@ -201,17 +247,28 @@ class Board:
         if not legal_moves.get(*end_coord):
             raise ValueError(f"Illegal move {start_coord}, {end_coord}" + f"{legal_moves.show()}")
 
-        start_bitboard = BitBoard(coordinates=[start_coord])
-        end_bitboard = BitBoard(coordinates=[end_coord])
+        en_passant_move = False
 
-        # Update friendly piece
-        selected_bitboard = friendly_pieces[selected_piece]
-        friendly_pieces[selected_piece] = selected_bitboard ^ start_bitboard
-        friendly_pieces[selected_piece] += end_bitboard
+        if selected_piece == "p":
+            en_passant_move = self.handle_enpassant(
+                start_coord,
+                end_coord,
+                friendly_pieces,
+                opponent_pieces
+            )
 
-        # Update opponent piece (if any)
-        for piece in opponent_pieces:
-            opponent_pieces[piece] -= end_bitboard
+        if not en_passant_move:
+            start_bitboard = BitBoard(coordinates=[start_coord])
+            end_bitboard = BitBoard(coordinates=[end_coord])
+
+            # Update friendly piece
+            piece_bitboard = friendly_pieces[selected_piece]
+            friendly_pieces[selected_piece] = piece_bitboard ^ start_bitboard
+            friendly_pieces[selected_piece] += end_bitboard
+
+            # Update opponent piece (if any)
+            for piece in opponent_pieces:
+                opponent_pieces[piece] -= end_bitboard
 
         # Update other attributes
         self.to_move = self.to_move * -1
@@ -272,20 +329,24 @@ class Board:
             self._castling = state
 
     @property
-    def en_passant(self) -> str:
+    def en_passant(self) -> BitBoard:
         return self._en_passant
 
     @en_passant.setter
-    def en_passant(self, state: str) -> None:
-        if(state == "-"):
+    def en_passant(self, state) -> None:
+        if isinstance(state, BitBoard):
             self._en_passant = state
-        elif len(state) != 2:
-            raise ValueError(f"Invalid en passant string length, expected length 2 but got string: {state}")
-        elif (state[0] not in set("abcdefgh") or
-              state[1] not in set("12345678")):
-            raise ValueError(f"Invalid en passant string: {state}")
-        else:
-            self._en_passant = state
+        elif isinstance(state, str):
+            if(state == "-"):
+                self._en_passant = BitBoard()
+            elif len(state) != 2:
+                raise ValueError(f"Invalid en passant string: {state}")
+            elif (state[0] not in set("abcdefgh") or
+                  state[1] not in set("12345678")):
+                raise ValueError(f"Invalid en passant string: {state}")
+            else:
+                coords = parsers.alphanumeric_to_index(state)
+                self._en_passant = BitBoard(coordinates=[coords])
 
     @property
     def fifty_move(self) -> int:

@@ -82,14 +82,11 @@ class PieceHandler:
             if cls._in_range(location[0], location[1]):
                 capture_bitboard.set(location[0], location[1])
 
-        opp_bitboard = board.get_color_bitboard(board.to_move * -1)
+        # Check if opponent pieces exist on capture square
+        opponent_bitboard = board.get_color_bitboard(board.to_move * -1)
+        opponent_bitboard += board.en_passant  # Add en-passant captures
 
-        # Handle en-passant
-        ep_position = parsers.alphanumeric_to_index(board.en_passant)
-        if ep_position is not None:
-            opp_bitboard.set(ep_position[0], ep_position[1])
-
-        capture_bitboard = capture_bitboard & opp_bitboard
+        capture_bitboard = capture_bitboard & opponent_bitboard
 
         bitboard += capture_bitboard
 
@@ -124,7 +121,7 @@ class PieceHandler:
                 bitboard.set(location[0], location[1])
 
         # Check if knight is attacking friendly pieces
-        friendly_bitboard = board.get_color_bitboard(boad.to_move)
+        friendly_bitboard = board.get_color_bitboard(board.to_move)
         friendly_bitboard = friendly_bitboard & bitboard
 
         bitboard = bitboard ^ friendly_bitboard
