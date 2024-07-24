@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Tuple
 
 
 class BitBoard:
@@ -11,9 +11,21 @@ class BitBoard:
         bitboard (int): Integer storing binary representation of a bitboard
     """
 
-    def __init__(self, bitboard: Optional['BitBoard'] = None):
+    def __init__(
+        self,
+        coordinates: Optional[List[Tuple[int, int]]] = None,
+        bitboard: Optional['BitBoard'] = None
+    ):
         if bitboard is not None:
             self.bitboard = bitboard.bitboard
+        elif coordinates is not None:
+            self.bitboard = int('0b0', 2)
+
+            for coord in coordinates:
+                assert len(coord) == 2
+                assert 0 <= coord[0] and coord[0] <= 7
+                assert 0 <= coord[1] and coord[1] <= 7
+                self.set(coord[0], coord[1])
         else:
             self.bitboard = int('0b0', 2)
 
@@ -51,7 +63,7 @@ class BitBoard:
         return self
 
     def __copy__(self):
-        return BitBoard(self)
+        return BitBoard(bitboard=self)
 
     def set(self, row: int, col: int) -> None:
         """

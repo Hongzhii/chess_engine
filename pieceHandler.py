@@ -1,8 +1,9 @@
 import parsers
 import FENs
-from board import Board
 from bitboard import BitBoard
 from typing import Tuple
+
+from my_types import Board
 
 WHITE_PIECES = set("PNBRQK")
 BLACK_PIECES = set("pnbrqk")
@@ -36,19 +37,19 @@ class PieceHandler:
     def _get_pawn_moves(
         cls,
         board: Board,
-        color: int,
         position: Tuple[int, int]
     ) -> BitBoard:
-        if color == -1:
-            assert board.get_piece(position[0], position[1]) == 'p'
+        piece = board.get_piece(position[0], position[1])
+        if board.to_move == -1:
+            assert piece == 'p', f"Got {piece}"
         else:
-            assert board.get_piece(position[0], position[1]) == 'P'
+            assert piece == 'P', f"Got {piece}"
 
         bitboard = BitBoard()
 
         all_pieces = board.get_color_bitboard(1) + board.get_color_bitboard(-1)
 
-        if color == -1:
+        if board.to_move == -1:
             if not all_pieces.get(position[0] + 1, position[1]):
                 bitboard.set(position[0] + 1, position[1])
 
@@ -59,12 +60,12 @@ class PieceHandler:
             if not all_pieces.get(position[0] - 1, position[1]):
                 bitboard.set(position[0] - 1, position[1])
 
-            if position[0] == 1 and \
+            if position[0] == 6 and \
                     not all_pieces.get(position[0] - 2, position[1]):
                 bitboard.set(position[0] - 2, position[1])
 
         # List possible captures
-        if color == -1:
+        if board.to_move == -1:
             candidate_locations = [
                 (position[0] + 1, position[1] + 1),
                 (position[0] + 1, position[1] - 1)
@@ -81,7 +82,7 @@ class PieceHandler:
             if cls._in_range(location[0], location[1]):
                 capture_bitboard.set(location[0], location[1])
 
-        opp_bitboard = board.get_color_bitboard(color * -1)
+        opp_bitboard = board.get_color_bitboard(board.to_move * -1)
 
         # Handle en-passant
         ep_position = parsers.alphanumeric_to_index(board.en_passant)
@@ -98,10 +99,9 @@ class PieceHandler:
     def _get_knight_moves(
         cls,
         board: Board,
-        color: int,
         position: Tuple[int, int]
     ) -> BitBoard:
-        if color == -1:
+        if board.to_move == -1:
             assert board.get_piece(position[0], position[1]) == 'n'
         else:
             assert board.get_piece(position[0], position[1]) == 'N'
@@ -124,7 +124,7 @@ class PieceHandler:
                 bitboard.set(location[0], location[1])
 
         # Check if knight is attacking friendly pieces
-        friendly_bitboard = board.get_color_bitboard(color)
+        friendly_bitboard = board.get_color_bitboard(boad.to_move)
         friendly_bitboard = friendly_bitboard & bitboard
 
         bitboard = bitboard ^ friendly_bitboard
@@ -135,18 +135,17 @@ class PieceHandler:
     def _get_bishop_moves(
         cls,
         board: Board,
-        color: int,
         position: Tuple[int, int]
     ) -> BitBoard:
-        if color == -1:
+        if board.to_move == -1:
             assert board.get_piece(position[0], position[1]) in set("bq")
         else:
             assert board.get_piece(position[0], position[1]) in set("BQ")
 
         bitboard = BitBoard()
 
-        friendly_bitboard = board.get_color_bitboard(color)
-        opponent_bitboard = board.get_color_bitboard(color * -1)
+        friendly_bitboard = board.get_color_bitboard(board.to_move)
+        opponent_bitboard = board.get_color_bitboard(board.to_move * -1)
 
         for i in [-1, 1]:
             for j in [-1, 1]:
@@ -172,18 +171,17 @@ class PieceHandler:
     def _get_rook_moves(
         cls,
         board: Board,
-        color: int,
         position: Tuple[int, int]
     ) -> BitBoard:
-        if color == -1:
+        if board.to_move == -1:
             assert board.get_piece(position[0], position[1]) in set("rq")
         else:
             assert board.get_piece(position[0], position[1]) in set("RQ")
 
         bitboard = BitBoard()
 
-        friendly_bitboard = board.get_color_bitboard(color)
-        opponent_bitboard = board.get_color_bitboard(color * -1)
+        friendly_bitboard = board.get_color_bitboard(board.to_move)
+        opponent_bitboard = board.get_color_bitboard(board.to_move * -1)
 
         for i in [-1, 1]:
             index = position[0]
@@ -220,16 +218,15 @@ class PieceHandler:
     def _get_queen_moves(
         cls,
         board: Board,
-        color: int,
         position: Tuple[int, int]
     ) -> BitBoard:
-        if color == -1:
+        if board.to_move == -1:
             assert board.get_piece(position[0], position[1]) == 'q'
         else:
             assert board.get_piece(position[0], position[1]) == 'Q'
 
-        bishop_component = cls._get_bishop_moves(board, color, position)
-        rook_component = cls._get_rook_moves(board, color, position)
+        bishop_component = cls._get_bishop_moves(board, position)
+        rook_component = cls._get_rook_moves(board, position)
 
         return bishop_component + rook_component
 
@@ -237,10 +234,9 @@ class PieceHandler:
     def _get_king_moves(
         cls,
         board: Board,
-        color: int,
         position: Tuple[int, int]
     ) -> BitBoard:
-        if color == -1:
+        if board.to_move == -1:
             assert board.get_piece(position[0], position[1]) == 'k'
         else:
             assert board.get_piece(position[0], position[1]) == 'K'
@@ -258,7 +254,7 @@ class PieceHandler:
             (position[0] - 1, position[1] - 1),
         ]
 
-        friendly_bitboard = board.get_color_bitboard(color)
+        friendly_bitboard = board.get_color_bitboard(board.to_move)
 
         for location in candidate_locations:
             if cls._in_range(location[0], location[1]) \
@@ -283,22 +279,20 @@ class PieceHandler:
             position (Tuple[int, int]): Position of piece being moved
             piece_type (str): Piece being moved
         """
-        assert piece_type in set("pnbrqkPNBRQK")
-
-        color = -1 if piece_type in set("pnbrqk") else 1
+        assert piece_type in set("pnbrqk")
 
         if piece_type.lower() == "p":
-            return cls._get_pawn_moves(board, color, position)
+            return cls._get_pawn_moves(board, position)
         elif piece_type.lower() == "n":
-            return cls._get_knight_moves(board, color, position)
+            return cls._get_knight_moves(board, position)
         elif piece_type.lower() == "b":
-            return cls._get_bishop_moves(board, color, position)
+            return cls._get_bishop_moves(board, position)
         elif piece_type.lower() == "r":
-            return cls._get_rook_moves(board, color, position)
+            return cls._get_rook_moves(board, position)
         elif piece_type.lower() == "q":
-            return cls._get_queen_moves(board, color, position)
+            return cls._get_queen_moves(board, position)
         else:
-            return cls._get_king_moves(board, color, position)
+            return cls._get_king_moves(board, position)
 
 
 if __name__ == "__main__":

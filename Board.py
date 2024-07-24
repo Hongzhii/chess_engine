@@ -1,6 +1,9 @@
 import numpy as np
 import FENs
 from bitboard import BitBoard
+from pieceHandler import PieceHandler
+
+from typing import Tuple
 
 """
 -----------------
@@ -28,6 +31,7 @@ class Board:
     A class to represent any given game state.
 
     Attributes:
+        pieceHandler (PieceHandler): PieceHandler utility class to help get moves
         to_move (int): The player to move next. (1 or -1)
         castling (str): KQkq type string to specify King/Queenside castling
         en_passant (str): Specify En-Passant capturable square
@@ -47,6 +51,7 @@ class Board:
         Args:
             fen_string (str): FEN string representing the board state
         """
+        self.pieceHandler = PieceHandler()
 
         self.black_positions = {
             "p": BitBoard(),
@@ -165,6 +170,55 @@ class Board:
 
         return " "
 
+    def move(
+        self,
+        start_coord: Tuple[int, int],
+        end_coord: Tuple[int, int]
+    ) -> None:
+        """
+        Verifies and executes move on the board
+
+        Args:
+            start_coords (Tuple): Tuple specifying start coordinates
+            end_coords (Tuple): Tuple specifying end coordinates
+        """
+        friendly_pieces = self.white_positions \
+            if self.to_move == 1 else self.black_positions
+
+        opponent_pieces = self.black_positions \
+            if self.to_move == 1 else self.white_positions
+
+        for selected_piece in friendly_pieces:
+            if friendly_pieces[selected_piece].get(*start_coord):
+                break
+
+        legal_moves = self.pieceHandler.get_moves(
+            self,
+            start_coord,
+            selected_piece
+        )
+
+        if not legal_moves.get(*end_coord):
+            raise ValueError(f"Illegal move {start_coord}, {end_coord}" + f"{legal_moves.show()}")
+
+        start_bitboard = BitBoard(coordinates=[start_coord])
+        end_bitboard = BitBoard(coordinates=[end_coord])
+
+        # Update friendly piece
+        selected_bitboard = friendly_pieces[selected_piece]
+        friendly_pieces[selected_piece] = selected_bitboard ^ start_bitboard
+        friendly_pieces[selected_piece] += end_bitboard
+
+        # Update opponent piece (if any)
+        for piece in opponent_pieces:
+            opponent_pieces[piece] -= end_bitboard
+
+        # Update other attributes
+        self.to_move = self.to_move * -1
+
+        if self.to_move == 1:  # Updated once every "full" move
+            self.moves += 1
+
     def show(self) -> None:
         """
         Method to display the current board state
@@ -190,14 +244,16 @@ class Board:
         return self._to_move
 
     @to_move.setter
-    def to_move(self, player: str) -> None:
-        if player not in {"w", "b"}:
+    def to_move(self, player) -> None:
+        if player not in {"w", "b", 1, -1}:
             raise ValueError(
-                "Player value should be either w or b\n" +
+                "Player value should be either w, b, -1 or 1\n" +
                 f"Got unexpected value: {player}"
             )
-        else:
+        elif player in {"w", "b"}:
             self._to_move = -1 if player == "b" else 1
+        else:
+            self._to_move = player
 
     @property
     def castling(self) -> str:
