@@ -140,7 +140,7 @@ class BitBoard:
             print(result[8*i:8*i+8])
         print("="*40)
 
-    def get_num_pieces(self) -> int:
+    def count(self) -> int:
         # Convert to binary string representation
         bin_str = bin(self.bitboard)
         return bin_str.count("1")
@@ -168,4 +168,4 @@ if __name__ == "__main__":
     bitboard += bitboard_copy
     bitboard.show()
 
-    assert bitboard.get_num_pieces() == 3, f"{bitboard.get_num_pieces()}"
+    assert bitboard.count() == 3, f"{bitboard.count()}"

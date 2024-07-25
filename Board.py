@@ -139,13 +139,13 @@ class Board:
 
         for k, v in self.black_positions.items():
             union_bitboard += v
-            num_pieces += v.get_num_pieces()
+            num_pieces += v.count()
 
         for k, v in self.white_positions.items():
             union_bitboard += v
-            num_pieces += v.get_num_pieces()
+            num_pieces += v.count()
 
-        assert num_pieces == union_bitboard.get_num_pieces(), f"Overlapping pieces detected: {num_pieces} {union_bitboard.get_num_pieces()}"
+        assert num_pieces == union_bitboard.count(), f"Overlapping pieces detected: {num_pieces} {union_bitboard.count()}"
 
     def get_piece(self, row: int, col: int) -> str:
         """
