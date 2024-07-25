@@ -202,6 +202,11 @@ class Board:
             # Update friendly pieces
             friendly_pieces["p"] -= start_bitboard
             friendly_pieces["p"] += end_bitboard
+
+            # Set the en_passant bitboard
+            self.en_passant = BitBoard(
+                coordinates=[(end_coord[0] + self.to_move, end_coord[1])]
+            )
             moved = True
         elif self.en_passant.get(*end_coord):
             # Update friendly pieces
@@ -258,6 +263,9 @@ class Board:
             )
 
         if not en_passant_move:
+            # Reset bitboard
+            self.en_passant = BitBoard()
+
             start_bitboard = BitBoard(coordinates=[start_coord])
             end_bitboard = BitBoard(coordinates=[end_coord])
 
