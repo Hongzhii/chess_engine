@@ -3,6 +3,7 @@ import FENs
 import parsers
 from bitboard import BitBoard
 from pieceHandler import PieceHandler
+from resources.pieces import piece_tokens
 
 from typing import Tuple
 
@@ -295,7 +296,8 @@ class Board:
         for row_num in range(8):
             for col_num in range(8):
                 print("|", end="")
-                print(self.get_piece(row_num, col_num), end="")
+                piece = self.get_piece(row_num, col_num)
+                print(piece_tokens[piece], end="")
             print("|")
 
             print("-" * 17)
