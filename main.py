@@ -2,6 +2,7 @@ import parsers
 import os
 
 from board import Board
+from parsers import alphanumeric_to_index
 
 if __name__ == "__main__":
     """
@@ -32,29 +33,39 @@ if __name__ == "__main__":
             error_message = None
 
         print(f"{color} to move")
-        user_input = input("Enter piece coordinates:\n")
 
-        if(user_input == "q"):
+        while True:
+            target_coord = input("Enter target square:\n")
+            if target_coord == "q":
+                break
+            try:
+                target_coord = alphanumeric_to_index(target_coord)
+                break
+            except ValueError as e:
+                print(e)
+
+        if target_coord == "q":
+            break
+
+        while True:
+            destination_coord = input("Enter destination square:\n")
+            if destination_coord == "q":
+                break
+            try:
+                destination_coord = alphanumeric_to_index(destination_coord)
+                break
+            except ValueError as e:
+                print(e)
+
+        if destination_coord == "q":
             break
 
         try:
-            start_coord = parsers.alphanumeric_to_index(user_input.lower())
+            board.move(
+                start_coord=target_coord,
+                end_coord=destination_coord
+            )
         except ValueError as e:
-            error_message = e
-            continue
+            error_message = str(e)
 
-        if not friendly_pieces.get(*start_coord):
-            error_message = "Please select a valid friendly piece"
-            continue
-
-        user_input = input("Enter destination coordinates:\n")
-
-        try:
-            end_coord = parsers.alphanumeric_to_index(user_input.lower())
-            board.move(start_coord, end_coord)
-        except ValueError as e:
-            error_message = e
-            continue
-
-        if(user_input == "q"):
-            break
+        
