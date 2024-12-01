@@ -29,6 +29,9 @@ class BitBoard:
         else:
             self.bitboard = int('0b0', 2)
 
+    def __eq__(self, bitboard: 'BitBoard') -> bool:
+        return self.bitboard == bitboard.bitboard
+
     def __or__(self, bitboard: 'BitBoard') -> 'BitBoard':
         self.bitboard = self.bitboard | bitboard.bitboard
         return self.__copy__()
@@ -64,6 +67,25 @@ class BitBoard:
 
     def __copy__(self):
         return BitBoard(bitboard=self)
+    
+    def __str__(self) -> str:
+        result = bin(self.bitboard)
+
+        # Remove "0b" prefix
+        result = result[2:]
+
+        # Perform zero padding at the beginning of the bitboard
+        result = "0" * (64-len(result)) + result
+
+        return_string = ""
+
+        # Reverse bitboard string (position 7, 7 is first position of bitboard)
+        return_string += F"{'='*40}\n"
+        for i in range(8):
+            return_string += f"{result[8*i:8*i+8]}\n"
+        return_string += F"{'='*40}\n"
+
+        return return_string
 
     def set(self, row: int, col: int) -> None:
         """
@@ -124,21 +146,6 @@ class BitBoard:
         mask = 1 << position
 
         return (mask & self.bitboard) >> position
-
-    def show(self):
-        result = bin(self.bitboard)
-
-        # Remove "0b" prefix
-        result = result[2:]
-
-        # Perform zero padding at the beginning of the bitboard
-        result = "0" * (64-len(result)) + result
-
-        # Reverse bitboard string (position 7, 7 is first position of bitboard)
-        print("="*40)
-        for i in range(8):
-            print(result[8*i:8*i+8])
-        print("="*40)
 
     def count(self) -> int:
         # Convert to binary string representation
