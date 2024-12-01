@@ -172,7 +172,7 @@ class Board:
 
         return " "
 
-    def handle_enpassant(
+    def handle_pawn_moves(
         self,
         start_coord: Tuple[int, int],
         end_coord: Tuple[int, int],
@@ -180,7 +180,7 @@ class Board:
         opponent_pieces: dict
     ) -> bool:
         """
-        Helper method to handle en-passant cases:
+        Helper method to handle pawn moves, en-passant cases in particular:
             1. Set en_passant bitboard for two square advances
             2. Remove the correct opponent piece for en-passant captures
 
@@ -239,10 +239,17 @@ class Board:
 
         opponent_pieces = self.black_positions \
             if self.to_move == 1 else self.white_positions
+        
+        piece_found = False
 
         for selected_piece in friendly_pieces:
             if friendly_pieces[selected_piece].get(*start_coord):
+                piece_found = True
                 break
+
+        if not piece_found:
+            raise ValueError("ERROR: No friendly piece in selected square")
+        
 
         legal_moves = self.pieceHandler.get_moves(
             self,
@@ -251,19 +258,19 @@ class Board:
         )
 
         if not legal_moves.get(*end_coord):
-            raise ValueError(f"Illegal move {start_coord}, {end_coord}" + f"{legal_moves.show()}")
+            raise ValueError(f"Illegal move {start_coord}, {end_coord}" + f"\n{legal_moves.__str__()}")
 
-        en_passant_move = False
+        pawn_move = False
 
         if selected_piece == "p":
-            en_passant_move = self.handle_enpassant(
+            pawn_move = self.handle_pawn_moves(
                 start_coord,
                 end_coord,
                 friendly_pieces,
                 opponent_pieces
             )
 
-        if not en_passant_move:
+        if not pawn_move:
             # Reset bitboard
             self.en_passant = BitBoard()
 
