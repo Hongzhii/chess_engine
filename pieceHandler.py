@@ -5,9 +5,6 @@ from typing import Tuple
 
 from my_types import Board
 
-WHITE_PIECES = set("PNBRQK")
-BLACK_PIECES = set("pnbrqk")
-
 
 class PieceHandler:
     """
