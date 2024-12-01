@@ -1,4 +1,6 @@
 from typing import Tuple, Optional
+from board import Board
+from bitboard import BitBoard
 
 FILES = ["a", "b", "c", "d", "e", "f", "g", "h"]
 FILE_TO_NUM = {FILES[i]: i for i in range(len(FILES))}
@@ -6,8 +8,7 @@ FILE_TO_NUM = {FILES[i]: i for i in range(len(FILES))}
 
 def parse_algebraic(
     user_input: str,
-    to_move: int,
-    pieces: dict
+    board: Board
 ) -> Tuple[str, Tuple, Tuple]:
     """
     Helper function to parse algebraic chess notation and extract piece type
@@ -22,27 +23,46 @@ def parse_algebraic(
 
     Input cases:
         Castling (o-o, o-o-o)
-        Simple movement (nf3, ke2, e4)
-        Ambigous piece moves (nef3, n1f3, ref3, r1f3)
-        Captures (exd5, nxf3, nexf3)
+        Simple movement (Nf3, Ke2, e4)
+        Ambigous piece moves (Nef3, N1f3, Ref3, R1f3)
+        Captures (exd5, Nxf3, Nexf3)
         Promotion (e8=q)
     """
-    user_input = user_input.lower()
     user_input = user_input.strip()
 
     # Handle castling case
-    if user_input == "o-o" and to_move == -1:
+    if user_input == "o-o" and board.to_move == -1:
         return "k", (0, 4), (0, 6)
-    elif user_input == "o-o" and to_move == 1:
+    elif user_input == "o-o" and board.to_move == 1:
         return "k", (7, 4), (7, 6)
-    elif user_input == "o-o-o" and to_move == -1:
+    elif user_input == "o-o-o" and board.to_move == -1:
         return "k", (0, 4), (0, 2)
-    elif user_input == "o-o-o" and to_move == 1:
+    elif user_input == "o-o-o" and board.to_move == 1:
         return "k", (7, 4), (7, 2)
-    
-    # Handle pawn moves
-    if len(user_input) == 2:
-        pass
+
+    # Find the piece types
+    if user_input[0] in set("NBRKQ"):
+        piece_type = user_input[0]
+    elif user_input[0] in set("abcdefgh"):
+        piece_type = "P"
+    else:
+        raise ValueError(f"Invalid input: {user_input}")
+
+    # Find the destination coordinates
+    if "=" in user_input:  # Handle promotion cases
+        end_square = user_input[:2]
+    else:  # Handle all other cases
+        end_square = user_input[-2:]
+
+    if board.to_move == -1:
+        piece_type = piece_type.lower()
+
+    # Find coordinates of target piece
+
+    # Find legal moves of target pieces
+
+    return piece_type, end_square
+
 
 
 def alphanumeric_to_index(position: str) -> Tuple[int, int]:
@@ -55,6 +75,9 @@ def alphanumeric_to_index(position: str) -> Tuple[int, int]:
 
     Returns:
         result (Tuple[int, int]): Position in index form
+
+    Throws:
+        ValueError: For alphanumeric coorinate inputs in invalid format
     """
     if position == "-":
         return None
@@ -65,13 +88,10 @@ def alphanumeric_to_index(position: str) -> Tuple[int, int]:
     file = position[0]
     rank = position[1]
 
-    if file not in set("abcdefgh"):
-        raise ValueError(f"Invalid file: {file}")
-    if rank not in set("12345678"):
-        raise ValueError(f"Invalid rank: {file}")
-
-    assert file in set("abcdefgh")
-    assert rank in set("12345678")
+    if file not in "abcdefgh":
+        raise ValueError(f"Invalid column: {file}")
+    if rank not in "12345678":
+        raise ValueError(f"Invalid row: {file}")
 
     file_no = FILE_TO_NUM[file]
 
