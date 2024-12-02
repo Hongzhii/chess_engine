@@ -1,3 +1,5 @@
+import copy
+
 from typing import Optional, List, Tuple
 
 
@@ -60,9 +62,14 @@ class BitBoard:
         return self
 
     def __isub__(self, bitboard: 'BitBoard') -> 'BitBoard':
+        # This step is necessary since 'BitBoard' is mutable, this means
+        # that the bitboard outside of the operator will also be changed
+        # by code inside the scope of this function
+        temp_bitboard = copy.deepcopy(bitboard)
+
         # Remove any bits that are not present in 'self' bitboard
-        bitboard = bitboard & self
-        self = self ^ bitboard
+        temp_bitboard = temp_bitboard & self 
+        self = self ^ temp_bitboard
         return self
 
     def __copy__(self):
