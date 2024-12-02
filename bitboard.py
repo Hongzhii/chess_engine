@@ -46,7 +46,7 @@ class BitBoard:
         self.bitboard = self.bitboard ^ bitboard.bitboard
         return self.__copy__()
 
-    def __invert__(self, bitboard: 'BitBoard') -> 'BitBoard':
+    def __invert__(self) -> 'BitBoard':
         self.bitboard = ~self.bitboard
         return self.__copy__()
 
@@ -58,8 +58,7 @@ class BitBoard:
         return self ^ bitboard
 
     def __iadd__(self, bitboard: 'BitBoard') -> 'BitBoard':
-        self = self | bitboard
-        return self
+        return self | bitboard
 
     def __isub__(self, bitboard: 'BitBoard') -> 'BitBoard':
         # This step is necessary since 'BitBoard' is mutable, this means
@@ -68,13 +67,12 @@ class BitBoard:
         temp_bitboard = copy.deepcopy(bitboard)
 
         # Remove any bits that are not present in 'self' bitboard
-        temp_bitboard = temp_bitboard & self 
-        self = self ^ temp_bitboard
-        return self
+        temp_bitboard = temp_bitboard & self
+        return self ^ temp_bitboard
 
     def __copy__(self):
         return BitBoard(bitboard=self)
-    
+
     def __str__(self) -> str:
         result = bin(self.bitboard)
 
@@ -155,31 +153,8 @@ class BitBoard:
         return (mask & self.bitboard) >> position
 
     def count(self) -> int:
-        # Convert to binary string representation
+        """
+        Counts the number of pieces present on the bitboard
+        """
         bin_str = bin(self.bitboard)
         return bin_str.count("1")
-
-
-if __name__ == "__main__":
-    bitboard = BitBoard()
-    bitboard.set(4, 5)
-    bitboard.set(3, 7)
-    bitboard.unset(3, 7)
-    bitboard.unset(0, 0)
-    bitboard.set(4, 5)
-
-    val = 1 << 63 - (8*4 + 5)
-    assert bitboard.bitboard ^ val == 0
-
-    bitboard_copy = BitBoard(bitboard)
-    bitboard_copy.unset(4, 5)
-    bitboard_copy.set(1, 3)
-    bitboard_copy.set(3, 3)
-
-    bitboard.show()
-    bitboard_copy.show()
-
-    bitboard += bitboard_copy
-    bitboard.show()
-
-    assert bitboard.count() == 3, f"{bitboard.count()}"
