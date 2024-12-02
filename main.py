@@ -1,8 +1,13 @@
-import parsers
 import os
+import parsers
 
 from board import Board
 from parsers import alphanumeric_to_index
+
+import FENs
+
+def get_debug_board():
+    return Board(FENs.FOURKNIGHTS_FEN)
 
 if __name__ == "__main__":
     """
@@ -38,6 +43,8 @@ if __name__ == "__main__":
             target_coord = input("Enter target square:\n")
             if target_coord == "q":
                 break
+            elif target_coord == "debug":
+                break
             try:
                 target_coord = alphanumeric_to_index(target_coord)
                 break
@@ -46,10 +53,15 @@ if __name__ == "__main__":
 
         if target_coord == "q":
             break
+        elif target_coord == "debug":
+            board = get_debug_board()
+            continue
 
         while True:
             destination_coord = input("Enter destination square:\n")
             if destination_coord == "q":
+                break
+            elif destination_coord == "debug":
                 break
             try:
                 destination_coord = alphanumeric_to_index(destination_coord)
@@ -59,6 +71,9 @@ if __name__ == "__main__":
 
         if destination_coord == "q":
             break
+        elif destination_coord == "debug":
+            board = get_debug_board()
+            continue
 
         try:
             board.move(
