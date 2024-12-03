@@ -1,10 +1,7 @@
-import os
-import parsers
-
 from board import Board
 from parsers import alphanumeric_to_index
 
-import FENs
+from resources import FENs
 
 def get_debug_board():
     return Board(FENs.FOURKNIGHTS_FEN)
@@ -15,7 +12,7 @@ if __name__ == "__main__":
     """
 
     board = Board()
-    error_message = None
+    ERROR_MESSAGE = None
 
     while True:
         # os.system("clear")
@@ -23,7 +20,7 @@ if __name__ == "__main__":
         board.show()
 
         to_move = board.board_state["to_move"]
-        color = "Black" if to_move == -1 else "White"
+        COLOR = "Black" if to_move == -1 else "White"
 
         friendly_pieces = board.get_color_bitboard(to_move)
 
@@ -33,17 +30,17 @@ if __name__ == "__main__":
 
         print("="*40)
 
-        if error_message is not None:
-            print(error_message)
-            error_message = None
+        if ERROR_MESSAGE is not None:
+            print(ERROR_MESSAGE)
+            ERROR_MESSAGE = None
 
-        print(f"{color} to move")
+        print(f"{COLOR} to move")
 
         while True:
             target_coord = input("Enter target square:\n")
             if target_coord == "q":
                 break
-            elif target_coord == "debug":
+            if target_coord == "debug":
                 break
             try:
                 target_coord = alphanumeric_to_index(target_coord)
@@ -53,7 +50,7 @@ if __name__ == "__main__":
 
         if target_coord == "q":
             break
-        elif target_coord == "debug":
+        if target_coord == "debug":
             board = get_debug_board()
             continue
 
@@ -61,7 +58,7 @@ if __name__ == "__main__":
             destination_coord = input("Enter destination square:\n")
             if destination_coord == "q":
                 break
-            elif destination_coord == "debug":
+            if destination_coord == "debug":
                 break
             try:
                 destination_coord = alphanumeric_to_index(destination_coord)
@@ -71,7 +68,7 @@ if __name__ == "__main__":
 
         if destination_coord == "q":
             break
-        elif destination_coord == "debug":
+        if destination_coord == "debug":
             board = get_debug_board()
             continue
 
@@ -81,6 +78,4 @@ if __name__ == "__main__":
                 end_coord=destination_coord
             )
         except ValueError as e:
-            error_message = str(e)
-
-        
+            ERROR_MESSAGE = str(e)

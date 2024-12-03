@@ -1,8 +1,6 @@
-import parsers
-import FENs
-from bitboard import BitBoard
 from typing import Tuple
 
+from bitboard import BitBoard
 from my_types import Board
 
 
@@ -25,8 +23,8 @@ class PieceHandler:
         Returns:
         isValid (bool): Whether or not position is within chessboard
         """
-        i_valid = 0 <= row and row <= 7
-        j_valid = 0 <= col and col <= 7
+        i_valid = 0 <= row <= 7
+        j_valid = 0 <= col <= 7
 
         return i_valid and j_valid
 
@@ -151,7 +149,8 @@ class PieceHandler:
 
                     if not cls._in_range(row_index, col_index):
                         break
-                    elif friendly_bitboard.get(row_index, col_index):
+
+                    if friendly_bitboard.get(row_index, col_index):
                         break
 
                     bitboard.set(row_index, col_index)
@@ -184,7 +183,8 @@ class PieceHandler:
 
                 if not cls._in_range(index, position[1]):
                     break
-                elif friendly_bitboard.get(index, position[1]):
+
+                if friendly_bitboard.get(index, position[1]):
                     break
 
                 bitboard.set(index, position[1])
@@ -198,7 +198,8 @@ class PieceHandler:
 
                 if not cls._in_range(position[0], index):
                     break
-                elif friendly_bitboard.get(position[0], index):
+
+                if friendly_bitboard.get(position[0], index):
                     break
 
                 bitboard.set(position[0], index)
@@ -277,47 +278,46 @@ class PieceHandler:
 
         if piece_type.lower() == "p":
             return cls._get_pawn_moves(board, position)
-        elif piece_type.lower() == "n":
+        if piece_type.lower() == "n":
             return cls._get_knight_moves(board, position)
-        elif piece_type.lower() == "b":
+        if piece_type.lower() == "b":
             return cls._get_bishop_moves(board, position)
-        elif piece_type.lower() == "r":
+        if piece_type.lower() == "r":
             return cls._get_rook_moves(board, position)
-        elif piece_type.lower() == "q":
+        if piece_type.lower() == "q":
             return cls._get_queen_moves(board, position)
-        else:
-            return cls._get_king_moves(board, position)
+        return cls._get_king_moves(board, position)
 
 
-if __name__ == "__main__":
-    handler = PieceHandler()
-    print("======EN PASSANT TEST CASE======")
-    board = Board(FENs.ENPASSANT_FEN)
-    board.show()
+# if __name__ == "__main__":
+#     handler = PieceHandler()
+#     print("======EN PASSANT TEST CASE======")
+#     board = Board(FENs.ENPASSANT_FEN)
+#     board.show()
 
-    print("Pawn Moves:")
-    print("(En-passant pawn)")
-    handler.get_moves(board, (3, 4), "P").show()
+#     print("Pawn Moves:")
+#     print("(En-passant pawn)")
+#     handler.get_moves(board, (3, 4), "P").show()
 
-    print("======FOUR KNIGHTS TESTCASE======")
-    board = Board(FENs.FOURKNIGHTS_FEN)
-    board.show()
-    print("Knight Moves:")
-    handler.get_moves(board, (5, 5), "N").show()
-    handler.get_moves(board, (5, 2), "N").show()
-    handler.get_moves(board, (2, 5), "n").show()
-    handler.get_moves(board, (2, 2), "n").show()
+#     print("======FOUR KNIGHTS TESTCASE======")
+#     board = Board(FENs.FOURKNIGHTS_FEN)
+#     board.show()
+#     print("Knight Moves:")
+#     handler.get_moves(board, (5, 5), "N").show()
+#     handler.get_moves(board, (5, 2), "N").show()
+#     handler.get_moves(board, (2, 5), "n").show()
+#     handler.get_moves(board, (2, 2), "n").show()
 
-    print("Bishop Moves:")
-    handler.get_moves(board, (7, 5), "B").show()
-    handler.get_moves(board, (7, 2), "B").show()
-    handler.get_moves(board, (0, 5), "b").show()
-    handler.get_moves(board, (0, 2), "b").show()
+#     print("Bishop Moves:")
+#     handler.get_moves(board, (7, 5), "B").show()
+#     handler.get_moves(board, (7, 2), "B").show()
+#     handler.get_moves(board, (0, 5), "b").show()
+#     handler.get_moves(board, (0, 2), "b").show()
 
-    print("Queen Moves:")
-    handler.get_moves(board, (7, 3), "Q").show()
-    handler.get_moves(board, (0, 3), "q").show()
+#     print("Queen Moves:")
+#     handler.get_moves(board, (7, 3), "Q").show()
+#     handler.get_moves(board, (0, 3), "q").show()
 
-    print("King Moves:")
-    handler.get_moves(board, (7, 4), "K").show()
-    handler.get_moves(board, (0, 4), "k").show()
+#     print("King Moves:")
+#     handler.get_moves(board, (7, 4), "K").show()
+#     handler.get_moves(board, (0, 4), "k").show()

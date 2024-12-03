@@ -1,6 +1,5 @@
-from typing import Tuple, Optional
+from typing import Tuple
 from board import Board
-from bitboard import BitBoard
 
 FILES = ["a", "b", "c", "d", "e", "f", "g", "h"]
 FILE_TO_NUM = {FILES[i]: i for i in range(len(FILES))}
@@ -33,11 +32,11 @@ def parse_algebraic(
     # Handle castling case
     if user_input == "o-o" and board.to_move == -1:
         return "k", (0, 4), (0, 6)
-    elif user_input == "o-o" and board.to_move == 1:
+    if user_input == "o-o" and board.to_move == 1:
         return "k", (7, 4), (7, 6)
-    elif user_input == "o-o-o" and board.to_move == -1:
+    if user_input == "o-o-o" and board.to_move == -1:
         return "k", (0, 4), (0, 2)
-    elif user_input == "o-o-o" and board.to_move == 1:
+    if user_input == "o-o-o" and board.to_move == 1:
         return "k", (7, 4), (7, 2)
 
     # Find the piece types
@@ -62,7 +61,6 @@ def parse_algebraic(
     # Find legal moves of target pieces
 
     return piece_type, end_square
-
 
 
 def alphanumeric_to_index(position: str) -> Tuple[int, int]:
@@ -96,17 +94,3 @@ def alphanumeric_to_index(position: str) -> Tuple[int, int]:
     file_no = FILE_TO_NUM[file]
 
     return (8 - int(rank), file_no)
-
-
-if __name__ == "__main__":
-    test1 = "a1"
-    test2 = "A1"
-
-    test3 = "f8"
-    test4 = "e3"
-
-    assert alphanumeric_to_index(test1) == (7, 0)
-    assert alphanumeric_to_index(test2) == (7, 0)
-
-    assert alphanumeric_to_index(test3) == (0, 5)
-    assert alphanumeric_to_index(test4) == (5, 4)

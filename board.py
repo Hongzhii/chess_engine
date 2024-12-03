@@ -1,6 +1,6 @@
 from typing import Tuple, Dict
 
-import FENs
+import resources.FENs as FENs
 import parsers
 from bitboard import BitBoard
 from pieceHandler import PieceHandler
