@@ -1,4 +1,5 @@
 todo.txt
 test.py
 .DS_Store
+.vscode/
 __pycache__/
