@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
         board.show()
 
-        to_move = board.to_move
+        to_move = board.board_state["to_move"]
         color = "Black" if to_move == -1 else "White"
 
         friendly_pieces = board.get_color_bitboard(to_move)

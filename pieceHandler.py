@@ -37,7 +37,7 @@ class PieceHandler:
         position: Tuple[int, int]
     ) -> BitBoard:
         piece = board.get_piece(position[0], position[1])
-        if board.to_move == -1:
+        if board.board_state["to_move"] == -1:
             assert piece == 'p', f"Got {piece}"
         else:
             assert piece == 'P', f"Got {piece}"
@@ -46,7 +46,7 @@ class PieceHandler:
 
         all_pieces = board.get_color_bitboard(1) + board.get_color_bitboard(-1)
 
-        if board.to_move == -1:
+        if board.board_state["to_move"] == -1:
             if not all_pieces.get(position[0] + 1, position[1]):
                 bitboard.set(position[0] + 1, position[1])
 
@@ -62,7 +62,7 @@ class PieceHandler:
                 bitboard.set(position[0] - 2, position[1])
 
         # List possible captures
-        if board.to_move == -1:
+        if board.board_state["to_move"] == -1:
             candidate_locations = [
                 (position[0] + 1, position[1] + 1),
                 (position[0] + 1, position[1] - 1)
@@ -80,8 +80,8 @@ class PieceHandler:
                 capture_bitboard.set(location[0], location[1])
 
         # Check if opponent pieces exist on capture square
-        opponent_bitboard = board.get_color_bitboard(board.to_move * -1)
-        opponent_bitboard += board.en_passant  # Add en-passant captures
+        opponent_bitboard = board.get_color_bitboard(board.board_state["to_move"] * -1)
+        opponent_bitboard += board.board_state["en_passant"]  # Add en-passant captures
 
         capture_bitboard = capture_bitboard & opponent_bitboard
 
@@ -95,7 +95,7 @@ class PieceHandler:
         board: Board,
         position: Tuple[int, int]
     ) -> BitBoard:
-        if board.to_move == -1:
+        if board.board_state["to_move"] == -1:
             assert board.get_piece(position[0], position[1]) == 'n'
         else:
             assert board.get_piece(position[0], position[1]) == 'N'
@@ -118,7 +118,7 @@ class PieceHandler:
                 bitboard.set(location[0], location[1])
 
         # Check if knight is attacking friendly pieces
-        friendly_bitboard = board.get_color_bitboard(board.to_move)
+        friendly_bitboard = board.get_color_bitboard(board.board_state["to_move"])
         friendly_bitboard = friendly_bitboard & bitboard
 
         bitboard = bitboard ^ friendly_bitboard
@@ -131,15 +131,15 @@ class PieceHandler:
         board: Board,
         position: Tuple[int, int]
     ) -> BitBoard:
-        if board.to_move == -1:
+        if board.board_state["to_move"] == -1:
             assert board.get_piece(position[0], position[1]) in set("bq")
         else:
             assert board.get_piece(position[0], position[1]) in set("BQ")
 
         bitboard = BitBoard()
 
-        friendly_bitboard = board.get_color_bitboard(board.to_move)
-        opponent_bitboard = board.get_color_bitboard(board.to_move * -1)
+        friendly_bitboard = board.get_color_bitboard(board.board_state["to_move"])
+        opponent_bitboard = board.get_color_bitboard(board.board_state["to_move"] * -1)
 
         for i in [-1, 1]:
             for j in [-1, 1]:
@@ -167,15 +167,15 @@ class PieceHandler:
         board: Board,
         position: Tuple[int, int]
     ) -> BitBoard:
-        if board.to_move == -1:
+        if board.board_state["to_move"] == -1:
             assert board.get_piece(position[0], position[1]) in set("rq")
         else:
             assert board.get_piece(position[0], position[1]) in set("RQ")
 
         bitboard = BitBoard()
 
-        friendly_bitboard = board.get_color_bitboard(board.to_move)
-        opponent_bitboard = board.get_color_bitboard(board.to_move * -1)
+        friendly_bitboard = board.get_color_bitboard(board.board_state["to_move"])
+        opponent_bitboard = board.get_color_bitboard(board.board_state["to_move"] * -1)
 
         for i in [-1, 1]:
             index = position[0]
@@ -214,7 +214,7 @@ class PieceHandler:
         board: Board,
         position: Tuple[int, int]
     ) -> BitBoard:
-        if board.to_move == -1:
+        if board.board_state["to_move"] == -1:
             assert board.get_piece(position[0], position[1]) == 'q'
         else:
             assert board.get_piece(position[0], position[1]) == 'Q'
@@ -230,7 +230,7 @@ class PieceHandler:
         board: Board,
         position: Tuple[int, int]
     ) -> BitBoard:
-        if board.to_move == -1:
+        if board.board_state["to_move"] == -1:
             assert board.get_piece(position[0], position[1]) == 'k'
         else:
             assert board.get_piece(position[0], position[1]) == 'K'
@@ -248,7 +248,7 @@ class PieceHandler:
             (position[0] - 1, position[1] - 1),
         ]
 
-        friendly_bitboard = board.get_color_bitboard(board.to_move)
+        friendly_bitboard = board.get_color_bitboard(board.board_state["to_move"])
 
         for location in candidate_locations:
             if cls._in_range(location[0], location[1]) \
