@@ -78,7 +78,7 @@ class Board:
             raise ValueError(
                 f"Invalid FEN string, expected 6 components instead got {len(components)}"
             )
-        
+
         self.board_state = components
 
         board_rows = components[0].split("/")
@@ -315,7 +315,7 @@ class Board:
     def board_state(self) -> Dict:
         """Get current board state"""
         return self._board_state
-    
+
     @board_state.setter
     def board_state(self, components):
         self._board_state = {
@@ -335,8 +335,8 @@ class Board:
             )
         if player in {"w", "b"}:
             return -1 if player == "b" else 1
-        else:
-            return player
+
+        return player
 
 
     def _val_castling(self, state: str) -> str:
@@ -353,17 +353,22 @@ class Board:
     def _val_en_passant(self, state) -> None:
         if isinstance(state, BitBoard):
             return state
-        elif isinstance(state, str):
+
+        if isinstance(state, str):
             if state == "-":
                 return BitBoard()
-            elif len(state) != 2:
+            if len(state) != 2:
                 raise ValueError(f"Invalid en passant string: {state}")
-            elif (state[0] not in set("abcdefgh") or
+            if (state[0] not in set("abcdefgh") or
                   state[1] not in set("12345678")):
                 raise ValueError(f"Invalid en passant string: {state}")
-            else:
-                coords = parsers.alphanumeric_to_index(state)
-                return BitBoard(coordinates=[coords])
+
+            coords = parsers.alphanumeric_to_index(state)
+            return BitBoard(coordinates=[coords])
+
+        raise ValueError(
+            f"Invalid en passant input type {type(state)}: {str(state)}"
+        )
 
     def _val_fifty_move(self, num_moves: int) -> None:
         num_moves = int(num_moves)
