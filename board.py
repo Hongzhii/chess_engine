@@ -1,11 +1,10 @@
-import numpy as np
+from typing import Tuple, Dict
+
 import FENs
 import parsers
 from bitboard import BitBoard
 from pieceHandler import PieceHandler
 from resources.pieces import piece_tokens
-
-from typing import Tuple
 
 """
 -----------------
@@ -53,7 +52,7 @@ class Board:
         Args:
             fen_string (str): FEN string representing the board state
         """
-        self.pieceHandler = PieceHandler()
+        self.piece_handler = PieceHandler()
 
         self.black_positions = {
             "p": BitBoard(),
@@ -76,20 +75,17 @@ class Board:
         components = fen_string.split(" ")
 
         if len(components) != 6:
-            raise ValueError(f"Invalid FEN string, expected 6 components instead got {len(components)}")
-
-        self.to_move = components[1]
-        self.castling = components[2]
-        self.en_passant = components[3]
-        self.fifty_move = int(components[4])
-        self.moves = int(components[5])
+            raise ValueError(
+                f"Invalid FEN string, expected 6 components instead got {len(components)}"
+            )
+        
+        self.board_state = components
 
         board_rows = components[0].split("/")
         assert len(board_rows) == 8
 
-        for i in range(len(board_rows)):
+        for i, row in enumerate(board_rows):
             assert i < 8, f"Got i: {i}"
-            row = board_rows[i]
             j = 0
             for char in row:
                 if char in set("12345678"):
@@ -120,11 +116,11 @@ class Board:
         bitboard = BitBoard()
 
         if color == -1:
-            for piece in self.black_positions:
-                bitboard += self.black_positions[piece]
+            for _, black_position in self.black_positions.items():
+                bitboard += black_position
         else:
-            for piece in self.white_positions:
-                bitboard += self.white_positions[piece]
+            for _, white_position in self.white_positions.items():
+                bitboard += white_position
 
         return bitboard
 
@@ -138,15 +134,16 @@ class Board:
         num_pieces = 0
         union_bitboard = BitBoard()
 
-        for k, v in self.black_positions.items():
-            union_bitboard += v
-            num_pieces += v.count()
+        for _, black_position in self.black_positions.items():
+            union_bitboard += black_position
+            num_pieces += black_position.count()
 
-        for k, v in self.white_positions.items():
-            union_bitboard += v
-            num_pieces += v.count()
+        for _, white_position in self.white_positions.items():
+            union_bitboard += white_position
+            num_pieces += white_position.count()
 
-        assert num_pieces == union_bitboard.count(), f"Overlapping pieces detected: {num_pieces} {union_bitboard.count()}"
+        assert num_pieces == union_bitboard.count(), \
+            f"Overlapping pieces detected: {num_pieces} {union_bitboard.count()}"
 
     def get_piece(self, row: int, col: int) -> str:
         """
@@ -162,12 +159,12 @@ class Board:
 
         mask = 1 << 63 - (8 * row + col)
 
-        for piece in self.black_positions:
-            if mask & self.black_positions[piece].bitboard:
+        for piece, black_position in self.black_positions.items():
+            if mask & black_position.bitboard:
                 return piece
 
-        for piece in self.white_positions:
-            if mask & self.white_positions[piece].bitboard:
+        for piece, white_position in self.white_positions.items():
+            if mask & white_position.bitboard:
                 return piece.upper()
 
         return " "
@@ -205,18 +202,18 @@ class Board:
             friendly_pieces["p"] += end_bitboard
 
             # Set the en_passant bitboard
-            self.en_passant = BitBoard(
-                coordinates=[(end_coord[0] + self.to_move, end_coord[1])]
+            self.board_state["en_passant"] = BitBoard(
+                coordinates=[(end_coord[0] + self.board_state["to_move"], end_coord[1])]
             )
             moved = True
-        elif self.en_passant.get(*end_coord):
+        elif self.board_state["en_passant"].get(*end_coord):
             # Update friendly pieces
             friendly_pieces["p"] -= start_bitboard
             friendly_pieces["p"] += end_bitboard
 
             # Remove captured piece
             capture_bitboard = BitBoard(
-                coordinates=[(end_coord[0] + self.to_move, end_coord[1])]
+                coordinates=[(end_coord[0] + self.board_state["to_move"], end_coord[1])]
             )
             opponent_pieces["p"] -= capture_bitboard
             moved = True
@@ -235,11 +232,11 @@ class Board:
             end_coords (Tuple): Tuple specifying end coordinates
         """
         friendly_pieces = self.white_positions \
-            if self.to_move == 1 else self.black_positions
+            if self.board_state["to_move"] == 1 else self.black_positions
 
         opponent_pieces = self.black_positions \
-            if self.to_move == 1 else self.white_positions
-        
+            if self.board_state["to_move"] == 1 else self.white_positions
+
         piece_found = False
 
         for selected_piece in friendly_pieces:
@@ -249,16 +246,18 @@ class Board:
 
         if not piece_found:
             raise ValueError("ERROR: No friendly piece in selected square")
-        
 
-        legal_moves = self.pieceHandler.get_moves(
+
+        legal_moves = self.piece_handler.get_moves(
             self,
             start_coord,
             selected_piece
         )
 
         if not legal_moves.get(*end_coord):
-            raise ValueError(f"Illegal move {start_coord}, {end_coord}" + f"\n{legal_moves.__str__()}")
+            raise ValueError(
+                f"Illegal move {start_coord}, {end_coord}" + f"\n{str(legal_moves)}"
+            )
 
         pawn_move = False
 
@@ -271,8 +270,8 @@ class Board:
             )
 
         if not pawn_move:
-            # Reset bitboard
-            self.en_passant = BitBoard()
+            # Reset en passant bitboard (if last pawn move was a two square advance)
+            self.board_state["en_passant"] = BitBoard()
 
             start_bitboard = BitBoard(coordinates=[start_coord])
             end_bitboard = BitBoard(coordinates=[end_coord])
@@ -287,10 +286,10 @@ class Board:
                 opponent_pieces[piece] -= end_bitboard
 
         # Update other attributes
-        self.to_move = self.to_move * -1
+        self.board_state["to_move"] = self.board_state["to_move"] * -1
 
-        if self.to_move == 1:  # Updated once every "full" move
-            self.moves += 1
+        if self.board_state["to_move"] == 1:  # Updated once every "full" move
+            self.board_state["moves"] += 1
 
     def show(self) -> None:
         """
@@ -309,32 +308,38 @@ class Board:
 
             print("-" * 17)
 
-        print("BLACK TO MOVE" if self.to_move == -1 else "WHITE TO MOVE")
-        print("MOVE NUMBER: " + str(self.moves))
+        print("BLACK TO MOVE" if self.board_state["to_move"] == -1 else "WHITE TO MOVE")
+        print("MOVE NUMBER: " + str(self.board_state["moves"]))
 
     @property
-    def to_move(self) -> int:
-        """Get current player move"""
-        return self._to_move
+    def board_state(self) -> Dict:
+        """Get current board state"""
+        return self._board_state
+    
+    @board_state.setter
+    def board_state(self, components):
+        self._board_state = {
+            "to_move": self._val_to_move(components[1]),
+            "castling": self._val_castling(components[2]),
+            "en_passant": self._val_en_passant(components[3]),
+            "fifty_move": self._val_fifty_move(components[4]),
+            "moves": self._val_moves(components[5])
+        }
 
-    @to_move.setter
-    def to_move(self, player) -> None:
+
+    def _val_to_move(self, player) -> int:
         if player not in {"w", "b", 1, -1}:
             raise ValueError(
                 "Player value should be either w, b, -1 or 1\n" +
                 f"Got unexpected value: {player}"
             )
-        elif player in {"w", "b"}:
-            self._to_move = -1 if player == "b" else 1
+        if player in {"w", "b"}:
+            return -1 if player == "b" else 1
         else:
-            self._to_move = player
+            return player
 
-    @property
-    def castling(self) -> str:
-        return self._castling
 
-    @castling.setter
-    def castling(self, state: str) -> None:
+    def _val_castling(self, state: str) -> str:
         if state not in {
             "----", "---q", "--k-", "--kq",
             "-Q--", "-Q-q", "-Qk-", "-Qkq",
@@ -342,20 +347,15 @@ class Board:
             "KQ--", "KQ-q", "KQk-", "KQkq"
         }:
             raise ValueError(f"Invalid castling state: {state}")
-        else:
-            self._castling = state
 
-    @property
-    def en_passant(self) -> BitBoard:
-        return self._en_passant
+        return state
 
-    @en_passant.setter
-    def en_passant(self, state) -> None:
+    def _val_en_passant(self, state) -> None:
         if isinstance(state, BitBoard):
-            self._en_passant = state
+            return state
         elif isinstance(state, str):
-            if(state == "-"):
-                self._en_passant = BitBoard()
+            if state == "-":
+                return BitBoard()
             elif len(state) != 2:
                 raise ValueError(f"Invalid en passant string: {state}")
             elif (state[0] not in set("abcdefgh") or
@@ -363,29 +363,25 @@ class Board:
                 raise ValueError(f"Invalid en passant string: {state}")
             else:
                 coords = parsers.alphanumeric_to_index(state)
-                self._en_passant = BitBoard(coordinates=[coords])
+                return BitBoard(coordinates=[coords])
 
-    @property
-    def fifty_move(self) -> int:
-        return self._fifty_move
+    def _val_fifty_move(self, num_moves: int) -> None:
+        num_moves = int(num_moves)
 
-    @fifty_move.setter
-    def fifty_move(self, num_moves: int) -> None:
-        if(not isinstance(num_moves, int) or num_moves < 0):
-            raise ValueError(f"Expected non-negative integer for 'fifty_move', instead got: {num_moves}")
-        else:
-            self._fifty_move = num_moves
+        if num_moves < 0:
+            raise ValueError(
+                f"Expected non-negative integer for 'fifty_move', instead got: {num_moves}"
+            )
 
-    @property
-    def moves(self) -> int:
-        return self._moves
+        return num_moves
 
-    @moves.setter
-    def moves(self, num_moves: int):
-        if(not isinstance(num_moves, int) or num_moves < 1):
+    def _val_moves(self, num_moves: int):
+        num_moves = int(num_moves)
+
+        if num_moves < 1:
             raise ValueError(f"Expected positive integer for 'moves', instead got: {num_moves}")
-        else:
-            self._moves = num_moves
+
+        return num_moves
 
 
 if __name__ == "__main__":
