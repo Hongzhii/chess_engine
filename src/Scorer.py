@@ -1,5 +1,5 @@
 from typing import Dict
-from my_types import Board
+from resources.my_types import Board
 
 class Scorer:
     """

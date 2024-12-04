@@ -1,9 +1,9 @@
 from typing import Tuple, Dict
 
 import resources.FENs as FENs
-import parsers
-from bitboard import BitBoard
-from pieceHandler import PieceHandler
+import src.parsers as parsers
+from src.bitboard import BitBoard
+from src.piece_handler import PieceHandler
 from resources.pieces import piece_tokens
 
 """
@@ -79,6 +79,7 @@ class Board:
                 f"Invalid FEN string, expected 6 components instead got {len(components)}"
             )
 
+        # Use custom setter to initialize board_state dictionary
         self.board_state = components
 
         board_rows = components[0].split("/")
@@ -341,7 +342,7 @@ class Board:
 
     def _val_castling(self, state: str) -> str:
         if state not in {
-            "----", "---q", "--k-", "--kq",
+            "-", "---q", "--k-", "--kq",
             "-Q--", "-Q-q", "-Qk-", "-Qkq",
             "K---", "K--q", "K-k-", "K-kq",
             "KQ--", "KQ-q", "KQk-", "KQkq"
@@ -390,5 +391,5 @@ class Board:
 
 
 if __name__ == "__main__":
-    board = Board(FENs.FOURKNIGHTS_FEN)
+    board = Board(FENs.LONDON_FEN)
     board.show()

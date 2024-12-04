@@ -1,5 +1,6 @@
+import sys
+
 from typing import Tuple
-from board import Board
 
 FILES = ["a", "b", "c", "d", "e", "f", "g", "h"]
 FILE_TO_NUM = {FILES[i]: i for i in range(len(FILES))}
@@ -7,7 +8,7 @@ FILE_TO_NUM = {FILES[i]: i for i in range(len(FILES))}
 
 def parse_algebraic(
     user_input: str,
-    board: Board
+    board
 ) -> Tuple[str, Tuple, Tuple]:
     """
     Helper function to parse algebraic chess notation and extract piece type

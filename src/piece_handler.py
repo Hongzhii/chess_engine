@@ -1,7 +1,7 @@
 from typing import Tuple
 
-from bitboard import BitBoard
-from my_types import Board
+from src.bitboard import BitBoard
+from resources.my_types import Board
 
 
 class PieceHandler:
