@@ -287,10 +287,11 @@ class Board:
                 opponent_pieces[piece] -= end_bitboard
 
         # Update other attributes
+        if self.board_state["to_move"] == -1:  # Updated once every "full" move
+            self.board_state["moves"] += 1
+
         self.board_state["to_move"] = self.board_state["to_move"] * -1
 
-        if self.board_state["to_move"] == 1:  # Updated once every "full" move
-            self.board_state["moves"] += 1
 
     def show(self) -> None:
         """
