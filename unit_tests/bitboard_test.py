@@ -1,8 +1,6 @@
 import unittest
 
-import config
-from bitboard import BitBoard
-
+from src.bitboard import BitBoard
 
 class TestBitBoard(unittest.TestCase):
     def setUp(self):
@@ -162,3 +160,5 @@ class TestBitBoard(unittest.TestCase):
 
         self.assertEqual(bitboard.bitboard, expected_val)
 
+if __name__=="__main__":
+    unittest.main()
