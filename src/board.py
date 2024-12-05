@@ -1,10 +1,11 @@
 from typing import Tuple, Dict
 
 import resources.FENs as FENs
+from resources.pieces import piece_tokens
+
 import src.parsers as parsers
 from src.bitboard import BitBoard
-from src.piece_handler import PieceHandler
-from resources.pieces import piece_tokens
+from src.piece_handler import get_moves
 
 """
 -----------------
@@ -32,7 +33,6 @@ class Board:
     A class to represent any given game state.
 
     Attributes:
-        pieceHandler (PieceHandler): PieceHandler utility class to get moves
         to_move (int): The player to move next. (1 or -1)
         castling (str): KQkq type string to specify King/Queenside castling
         en_passant (str): Specify En-Passant capturable square
@@ -52,8 +52,6 @@ class Board:
         Args:
             fen_string (str): FEN string representing the board state
         """
-        self.piece_handler = PieceHandler()
-
         self.black_positions = {
             "p": BitBoard(),
             "n": BitBoard(),
@@ -249,7 +247,7 @@ class Board:
             raise ValueError("ERROR: No friendly piece in selected square")
 
 
-        legal_moves = self.piece_handler.get_moves(
+        legal_moves = get_moves(
             self,
             start_coord,
             selected_piece
