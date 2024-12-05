@@ -17,7 +17,7 @@ if __name__ == "__main__":
     while True:
         # os.system("clear")
 
-        board.show()
+        print(board)
 
         to_move = board.board_state["to_move"]
         COLOR = "Black" if to_move == -1 else "White"
