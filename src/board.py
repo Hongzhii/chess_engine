@@ -293,25 +293,25 @@ class Board:
         self.board_state["to_move"] = self.board_state["to_move"] * -1
 
 
-    def show(self) -> None:
-        """
-        Method to display the current board state
-        """
-
+    def __str__(self) -> None:
         self.check_overlap()
 
-        print("-" * 17)
+        result = ""
+
+        result += ("-" * 17 + "\n")
         for row_num in range(8):
             for col_num in range(8):
-                print("|", end="")
+                result += "|"
                 piece = self.get_piece(row_num, col_num)
-                print(piece_tokens[piece], end="")
-            print("|")
+                result += piece_tokens[piece]
+            result += "|\n"
 
-            print("-" * 17)
+            result += ("-" * 17 + "\n")
 
-        print("BLACK TO MOVE" if self.board_state["to_move"] == -1 else "WHITE TO MOVE")
-        print("MOVE NUMBER: " + str(self.board_state["moves"]))
+        result += "BLACK TO MOVE\n" if self.board_state["to_move"] == -1 else "WHITE TO MOVE\n"
+        result += f"MOVE NUMBER: {self.board_state['moves']}\n"
+
+        return result
 
     @property
     def board_state(self) -> Dict:
@@ -390,7 +390,3 @@ class Board:
 
         return num_moves
 
-
-if __name__ == "__main__":
-    board = Board(FENs.LONDON_FEN)
-    board.show()
