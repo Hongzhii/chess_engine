@@ -401,7 +401,7 @@ class TestBoard(unittest.TestCase):
                 "00000000",
             ]), 2),
         }
-        
+
         london = Board(LONDON_FEN)
 
         for k, v in london.white_positions.items():
@@ -629,7 +629,7 @@ class TestBoard(unittest.TestCase):
                 "00000000",
             ]), 2),
         }
-        
+
         self.assertEqual(self.board.board_state["to_move"], 1)
         self.assertEqual(self.board.board_state["moves"], 1)
 
@@ -652,7 +652,7 @@ class TestBoard(unittest.TestCase):
         for k, v in self.board.black_positions.items():
             self.assertEqual(v.bitboard, EXPECTED_BLACK_POSITION[k])
 
-    
+
     def test_move_en_passant(self):
         EXPECTED_WHITE_POSITION = {
             "p":int("".join([
@@ -939,6 +939,11 @@ class TestBoard(unittest.TestCase):
         self.assertEqual(self.board.board_state["to_move"], 1)
         self.assertEqual(self.board.board_state["moves"], 5)
 
+        for k, v in self.board.white_positions.items():
+            self.assertEqual(v.bitboard, EXPECTED_WHITE_POSITION[k])
+        for k, v in self.board.black_positions.items():
+            self.assertEqual(v.bitboard, EXPECTED_BLACK_POSITION[k])
+
 
     def test_move_queenside_castling(self):
         EXPECTED_WHITE_POSITION = {
@@ -1065,7 +1070,7 @@ class TestBoard(unittest.TestCase):
                 "00000000",
             ]), 2),
         }
-        
+
         self.assertEqual(self.board.board_state["to_move"], 1)
         self.assertEqual(self.board.board_state["moves"], 1)
 
@@ -1083,6 +1088,11 @@ class TestBoard(unittest.TestCase):
         self.assertEqual(self.board.board_state["to_move"], 1)
         self.assertEqual(self.board.board_state["moves"], 6)
 
+        for k, v in self.board.white_positions.items():
+            self.assertEqual(v.bitboard, EXPECTED_WHITE_POSITION[k])
+        for k, v in self.board.black_positions.items():
+            self.assertEqual(v.bitboard, EXPECTED_BLACK_POSITION[k])
+
 
     def test_move_rook_castling_kingside_forfeit(self):
         self.board = Board(CASTLING_FEN)
@@ -1094,12 +1104,12 @@ class TestBoard(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.board.move(start_coord=(7, 4), end_coord=(7, 6))
-        
+
         self.board.move(start_coord=(7, 4), end_coord=(7, 2))
 
         with self.assertRaises(ValueError):
             self.board.move(start_coord=(0, 4), end_coord=(0, 6))
-        
+
         self.board.move(start_coord=(0, 4), end_coord=(0, 2))
 
 
@@ -1113,12 +1123,12 @@ class TestBoard(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.board.move(start_coord=(7, 4), end_coord=(7, 2))
-        
+
         self.board.move(start_coord=(7, 4), end_coord=(7, 6))
 
         with self.assertRaises(ValueError):
             self.board.move(start_coord=(0, 4), end_coord=(0, 2))
-        
+
         self.board.move(start_coord=(0, 4), end_coord=(0, 6))
 
 
@@ -1212,7 +1222,7 @@ class TestBoard(unittest.TestCase):
         print(str(self.board))
         print("------")
         print(STARTING_POSITION_STRING_OUTPUT.strip())
-        
+
         self.assertEqual(
             str(self.board).strip(),
             STARTING_POSITION_STRING_OUTPUT.strip()
