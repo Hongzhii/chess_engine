@@ -11,60 +11,6 @@ class TestBitBoard(unittest.TestCase):
 
         self.bitboard = BitBoard()
 
-
-    def test_set_method(self):
-        self.bitboard.set(0, 0)
-        self.bitboard.set(7, 7)
-        self.bitboard.set(0, 7)
-        self.bitboard.set(7, 0)
-        self.bitboard.set(4, 4)
-
-        expected_val = "".join([
-            "10000001",
-            "00000000",
-            "00000000",
-            "00000000",
-            "00001000",
-            "00000000",
-            "00000000",
-            "10000001"
-        ])
-        expected_val = int(expected_val, 2)
-
-        self.assertEqual(self.bitboard.bitboard, expected_val)
-
-    def test_unset_method(self):
-        self.bitboard.unset(0, 0)
-
-        initial_state = "".join([
-            "10000001",
-            "00000000",
-            "00000000",
-            "00000000",
-            "00000000",
-            "00000000",
-            "00000000",
-            "10000001"
-        ])
-        self.bitboard.bitboard = int(initial_state, 2)
-
-        self.bitboard.unset(0, 0)
-        self.bitboard.unset(7, 0)
-
-        expected_val = "".join([
-            "00000001",
-            "00000000",
-            "00000000",
-            "00000000",
-            "00000000",
-            "00000000",
-            "00000000",
-            "00000001"
-        ])
-        expected_val = int(expected_val, 2)
-
-        self.assertEqual(self.bitboard.bitboard, expected_val)
-
     def test_copy_constructor(self):
         initial_state = "".join([
             "10000001",
@@ -113,7 +59,85 @@ class TestBitBoard(unittest.TestCase):
 
         self.assertEqual(new_bitboard.bitboard, expected_val)
 
-    def test_inplace_add_method(self):
+    def test_set(self):
+        self.bitboard.set(0, 0)
+        self.bitboard.set(7, 7)
+        self.bitboard.set(0, 7)
+        self.bitboard.set(7, 0)
+        self.bitboard.set(4, 4)
+
+        expected_val = "".join([
+            "10000001",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00001000",
+            "00000000",
+            "00000000",
+            "10000001"
+        ])
+        expected_val = int(expected_val, 2)
+
+        self.assertEqual(self.bitboard.bitboard, expected_val)
+
+    def test_unset(self):
+        self.bitboard.unset(0, 0)
+
+        initial_state = "".join([
+            "10000001",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "10000001"
+        ])
+        self.bitboard.bitboard = int(initial_state, 2)
+
+        self.bitboard.unset(0, 0)
+        self.bitboard.unset(7, 0)
+
+        expected_val = "".join([
+            "00000001",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000001"
+        ])
+        expected_val = int(expected_val, 2)
+
+        self.assertEqual(self.bitboard.bitboard, expected_val)
+
+    def test_get_coordinates(self):
+        self.bitboard.bitboard = int("".join([
+            "10000001",
+            "00100000",
+            "00000100",
+            "00000001",
+            "00100000",
+            "10000010",
+            "00000000",
+            "10000001",
+        ]), 2)
+        expected_output = [
+            (0, 0), (0, 7),
+            (1, 2),
+            (2, 5),
+            (3, 7),
+            (4, 2),
+            (5, 0), (5, 6),
+            (7, 0), (7, 7)
+        ]
+
+        coords = self.bitboard.get_coordinates()
+
+        self.assertEqual(coords, expected_output)
+
+    def test_inplace_add(self):
         initial_val = "".join([
             "10000000",
             "01000000",
@@ -159,6 +183,7 @@ class TestBitBoard(unittest.TestCase):
         expected_val = int(expected_val, 2)
 
         self.assertEqual(bitboard.bitboard, expected_val)
+
 
 if __name__=="__main__":
     unittest.main()

@@ -239,7 +239,7 @@ class Board:
         piece_found = False
 
         for selected_piece in friendly_pieces:
-            if friendly_pieces[selected_piece].get(*start_coord):
+            if friendly_pieces[selected_piece].is_occupied(*start_coord):
                 piece_found = True
                 break
 
@@ -253,7 +253,7 @@ class Board:
             selected_piece
         )
 
-        if not legal_moves.get(*end_coord):
+        if not legal_moves.is_occupied(*end_coord):
             raise ValueError(
                 f"Illegal move {start_coord}, {end_coord}" + f"\n{str(legal_moves)}"
             )
