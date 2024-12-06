@@ -280,6 +280,11 @@ def get_moves(
     return _get_king_moves(board, position)
 
 
+def in_check(
+    board: Board
+) -> bool:
+    pass
+
 # if __name__ == "__main__":
 #     handler = PieceHandler()
 #     print("======EN PASSANT TEST CASE======")
