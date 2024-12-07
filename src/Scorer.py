@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from typing import Dict
-from resources.my_types import Board
 
 class Scorer:
     """
@@ -35,20 +36,3 @@ class Scorer:
         board: Board
     ) -> float:
         return self._get_piece_value_score(board)
-
-
-from Board import Board
-
-if __name__ == "__main__":
-    piece_vals = {
-        "p": 1.0,
-        "n": 3.0,
-        "b": 3.0,
-        "r": 5.0,
-        "q": 9.0,
-        "k": 0.0
-    }
-
-    board = Board()
-    scorer = Scorer(piece_vals)
-    assert scorer.get_score(board) == 0
