@@ -486,6 +486,31 @@ class TestBoard(unittest.TestCase):
 
         self.board.check_overlap()
 
+    # Test in-check detection method
+    def test_in_check(self):
+        """
+        This test case tests the functionality of the in_check() method.
+
+        Other involved methods/functionalities:
+            piece_handler.py
+                _get_{piece}_moves.py
+        """
+        with self.subTest():
+            board = Board(ILLEGAL_CASTLING_WHITE_IN_CHECK)
+            self.assertTrue(board.in_check())
+
+        with self.subTest():
+            board = Board(ILLEGAL_CASTLING_BLACK_IN_CHECK)
+            self.assertTrue(board.in_check())
+
+        with self.subTest():
+            board = Board()
+            self.assertFalse(board.in_check())
+
+        with self.subTest():
+            board.move((6, 4), (4, 4))
+            self.assertFalse(board.in_check())
+
 # ============================== START TEST move() ==============================
     """
     The following are a set of high level tests for verifying the functionality of

@@ -3,9 +3,9 @@ from typing import Tuple, Dict
 import resources.FENs as FENs
 from resources.pieces import piece_tokens
 
-import src.parsers as parsers
+from src import parsers
 from src.bitboard import BitBoard
-from src.piece_handler import get_moves
+from src import piece_handler
 
 """
 -----------------
@@ -167,6 +167,71 @@ class Board:
                 return piece.upper()
 
         return " "
+    
+    def in_check(
+        self
+    ) -> bool:
+        """
+        Method to determine if current player is in check
+
+        Returns:
+            result (bool): True if in check, False otherwise
+        """
+        to_move = self.board_state["to_move"]
+        self.board_state["to_move"] = -1 * to_move  # Change to opponents move for piece targeting
+
+        if to_move == 1:
+            king_bitboard = self.white_positions["k"]
+            opponent_positions = self.black_positions
+        else:
+            king_bitboard = self.black_positions["k"]
+            opponent_positions = self.white_positions
+
+        target_bitboard = BitBoard()
+
+        # Handle pawn moves separately, pawn movement action does not imply the ability to capture
+        pawn_bitboard = BitBoard()
+        pawn_positions = opponent_positions["p"].get_coordinates()
+
+        for position in pawn_positions:
+            pawn_bitboard += piece_handler.get_pawn_moves(
+                board=self,
+                position=position,
+                captures_only=True,
+            )
+
+        target_bitboard += pawn_bitboard
+
+        # Process remaining pieces
+        target_move_functions = [
+            (piece_handler.get_knight_moves, "n"),
+            (piece_handler.get_bishop_moves, "b"),
+            (piece_handler.get_rook_moves, "r"),
+            (piece_handler.get_queen_moves, "q"),
+        ]
+
+        for func, piece_type in target_move_functions:
+            piece_bitboard = BitBoard()
+            piece_positions = opponent_positions[piece_type].get_coordinates()
+
+            for position in piece_positions:
+                piece_bitboard += func(
+                    board=self,
+                    position=position,
+                )
+
+            target_bitboard += piece_bitboard
+
+        self.board_state["to_move"] = -1 * to_move  # Reset to_move to original state
+
+        print("Target bitboard:")
+        print(target_bitboard)
+        print("King bitboard:")
+        print(king_bitboard)
+        print("Target - king:")
+        print(target_bitboard - king_bitboard)
+
+        return (target_bitboard - king_bitboard) != target_bitboard
 
     def handle_pawn_moves(
         self,
@@ -247,7 +312,7 @@ class Board:
             raise ValueError("ERROR: No friendly piece in selected square")
 
 
-        legal_moves = get_moves(
+        legal_moves = piece_handler.get_moves(
             self,
             start_coord,
             selected_piece
