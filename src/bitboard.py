@@ -36,18 +36,24 @@ class BitBoard:
 
     def __eq__(self, bitboard: 'BitBoard') -> bool:
         return self.bitboard == bitboard.bitboard
+    
+    def __ne__(self, bitboard: 'BitBoard') -> bool:
+        return self.bitboard != bitboard.bitboard
 
     def __or__(self, bitboard: 'BitBoard') -> 'BitBoard':
-        self.bitboard = self.bitboard | bitboard.bitboard
-        return self.__copy__()
+        temp_bitboard = self.__copy__()
+        temp_bitboard.bitboard = self.bitboard | bitboard.bitboard
+        return temp_bitboard
 
     def __and__(self, bitboard: 'BitBoard') -> 'BitBoard':
-        self.bitboard = self.bitboard & bitboard.bitboard
-        return self.__copy__()
+        temp_bitboard = self.__copy__()
+        temp_bitboard.bitboard = self.bitboard & bitboard.bitboard
+        return temp_bitboard
 
     def __xor__(self, bitboard: 'BitBoard') -> 'BitBoard':
-        self.bitboard = self.bitboard ^ bitboard.bitboard
-        return self.__copy__()
+        temp_bitboard = self.__copy__()
+        temp_bitboard.bitboard = self.bitboard ^ bitboard.bitboard
+        return temp_bitboard
 
     def __invert__(self) -> 'BitBoard':
         self.bitboard = ~self.bitboard
@@ -57,21 +63,13 @@ class BitBoard:
         return self | bitboard
 
     def __sub__(self, bitboard: 'BitBoard') -> 'BitBoard':
-        bitboard = self & bitboard
-        return self ^ bitboard
+        return self ^ (self & bitboard)
 
     def __iadd__(self, bitboard: 'BitBoard') -> 'BitBoard':
-        return self | bitboard
+        return self + bitboard
 
     def __isub__(self, bitboard: 'BitBoard') -> 'BitBoard':
-        # This step is necessary since 'BitBoard' is mutable, this means
-        # that the bitboard outside of the operator will also be changed
-        # by code inside the scope of this function
-        temp_bitboard = copy.deepcopy(bitboard)
-
-        # Remove any bits that are not present in 'self' bitboard
-        temp_bitboard = temp_bitboard & self
-        return self ^ temp_bitboard
+        return self - bitboard
 
     def __copy__(self):
         return BitBoard(bitboard=self)

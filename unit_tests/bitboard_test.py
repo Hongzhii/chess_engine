@@ -137,6 +137,63 @@ class TestBitBoard(unittest.TestCase):
 
         self.assertEqual(coords, expected_output)
 
+    def test_add(self):
+        initial_val = "".join([
+            "10000000",
+            "01000000",
+            "00100000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000"
+        ])
+        initial_val = int(initial_val, 2)
+
+        add_val = "".join([
+            "00000000",
+            "00000000",
+            "00100000",
+            "00010000",
+            "00001000",
+            "00000100",
+            "00000000",
+            "00000000"
+        ])
+        add_val = int(add_val, 2)
+
+        bitboard = BitBoard()
+        bitboard.bitboard = initial_val
+
+        add_bitboard = BitBoard()
+        add_bitboard.bitboard = add_val
+
+        # Make a copy for equality verification check
+        original_bitboard = BitBoard()
+        original_bitboard.bitboard = bitboard.bitboard
+        original_add_bitboard = BitBoard()
+        original_add_bitboard.bitboard = add_bitboard.bitboard
+
+        new_bitboard = bitboard + add_bitboard
+
+        expected_val = "".join([
+            "10000000",
+            "01000000",
+            "00100000",
+            "00010000",
+            "00001000",
+            "00000100",
+            "00000000",
+            "00000000"
+        ])
+        expected_val = int(expected_val, 2)
+
+        self.assertEqual(new_bitboard.bitboard, expected_val)
+
+        # Original values should not be changed
+        self.assertEqual(bitboard.bitboard, original_bitboard.bitboard)
+        self.assertEqual(add_bitboard.bitboard, original_add_bitboard.bitboard)
+
     def test_inplace_add(self):
         initial_val = "".join([
             "10000000",
@@ -153,7 +210,7 @@ class TestBitBoard(unittest.TestCase):
         add_val = "".join([
             "00000000",
             "00000000",
-            "00000000",
+            "00100000",
             "00010000",
             "00001000",
             "00000100",
@@ -167,6 +224,12 @@ class TestBitBoard(unittest.TestCase):
 
         add_bitboard = BitBoard()
         add_bitboard.bitboard = add_val
+
+        # Make a copy for equality verification check
+        original_bitboard = BitBoard()
+        original_bitboard.bitboard = bitboard.bitboard
+        original_add_bitboard = BitBoard()
+        original_add_bitboard.bitboard = add_bitboard.bitboard
 
         bitboard += add_bitboard
 
@@ -183,6 +246,114 @@ class TestBitBoard(unittest.TestCase):
         expected_val = int(expected_val, 2)
 
         self.assertEqual(bitboard.bitboard, expected_val)
+
+        # Original value for bitboard should be different
+        self.assertNotEqual(bitboard.bitboard, original_bitboard.bitboard)
+        self.assertEqual(add_bitboard.bitboard, original_add_bitboard.bitboard)
+
+    def test_minus(self):
+        initial_val = "".join([
+            "10000000",
+            "01000000",
+            "00100000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000"
+        ])
+        initial_val = int(initial_val, 2)
+
+        minus_val = "".join([
+            "00000000",
+            "00000000",
+            "00100000",
+            "00010000",
+            "00001000",
+            "00000100",
+            "00000000",
+            "00000000"
+        ])
+        minus = int(minus_val, 2)
+
+        bitboard = BitBoard()
+        bitboard.bitboard = initial_val
+
+        minus_bitboard = BitBoard()
+        minus_bitboard.bitboard = minus
+
+        new_bitboard = bitboard - minus_bitboard
+
+        expected_val = "".join([
+            "10000000",
+            "01000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000"
+        ])
+        expected_val = int(expected_val, 2)
+
+        self.assertEqual(new_bitboard.bitboard, expected_val)
+
+    def test_inplace_minus(self):
+        initial_val = "".join([
+            "10000000",
+            "01000000",
+            "00100000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000"
+        ])
+        initial_val = int(initial_val, 2)
+
+        minus_val = "".join([
+            "00000000",
+            "00000000",
+            "00100000",
+            "00010000",
+            "00001000",
+            "00000100",
+            "00000000",
+            "00000000"
+        ])
+        minus_val = int(minus_val, 2)
+
+        bitboard = BitBoard()
+        bitboard.bitboard = initial_val
+
+        minus_bitboard = BitBoard()
+        minus_bitboard.bitboard = minus_val
+
+        # Make a copy for equality verification check
+        original_bitboard = BitBoard()
+        original_bitboard.bitboard = bitboard.bitboard
+        original_minus_bitboard = BitBoard()
+        original_minus_bitboard.bitboard = minus_bitboard.bitboard
+
+        bitboard -= minus_bitboard
+
+        expected_val = "".join([
+            "10000000",
+            "01000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000",
+            "00000000"
+        ])
+        expected_val = int(expected_val, 2)
+
+        self.assertEqual(bitboard.bitboard, expected_val)
+
+        # Original value for bitboard should be different
+        self.assertNotEqual(bitboard.bitboard, original_bitboard.bitboard)
+        self.assertEqual(minus_bitboard.bitboard, original_minus_bitboard.bitboard)
 
 
 if __name__=="__main__":
