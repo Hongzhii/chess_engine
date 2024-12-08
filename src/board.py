@@ -185,7 +185,7 @@ class Board:
                 opponent pieces
         """
         to_move = self.board_state["to_move"]
-        self.board_state["to_move"] = -1 * to_move  # Change to opponents move for piece targeting
+        self.board_state["to_move"] *= -1  # Change to opponents move for piece targeting
 
         if to_move == 1:
             king_bitboard = self.white_positions["k"]
@@ -229,7 +229,8 @@ class Board:
 
             target_bitboard += piece_bitboard
 
-        self.board_state["to_move"] = -1 * to_move  # Reset to_move to original state
+        # Reset to_move to original state
+        self.board_state["to_move"] *= -1
 
         if return_target_bitboard:
             return target_bitboard
@@ -259,11 +260,28 @@ class Board:
         
         # Check if move is castling move
 
+    def handle_rook_moves(
+        self,
+        start_coord: Tuple[int, int],
+        end_coord: Tuple[int, int],
+    ) -> None:
+        """
+        Helper method to handle rook moves, for updating castling state.
+
+        Args:
+            start_coord (Tuple): Piece start coordinates
+            end_coord (Tuple): Piece end coordinates
+
+        Returns:
+            None
+        """
+        pass
+
     def handle_pawn_moves(
         self,
         start_coord: Tuple[int, int],
         end_coord: Tuple[int, int],
-    ) -> bool:
+    ) -> None:
         """
         Helper method to handle pawn moves, en-passant cases in particular.
             1. Set en_passant bitboard for two square advances
@@ -361,6 +379,11 @@ class Board:
                 start_coord,
                 end_coord,
             )
+        elif selected_piece == "r":
+            self.handle_rook_moves(
+                start_coord,
+                end_coord,
+            )
         else:
             # Reset en passant bitboard (if last pawn move was a two square advance)
             self.board_state["en_passant"] = BitBoard()
@@ -377,7 +400,6 @@ class Board:
             for piece in opponent_pieces:
                 opponent_pieces[piece] -= end_bitboard
 
-        # Update other attributes
         if self.board_state["to_move"] == -1:  # Updated once every "full" move
             self.board_state["moves"] += 1
 
