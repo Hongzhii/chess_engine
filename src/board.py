@@ -169,13 +169,20 @@ class Board:
         return " "
     
     def in_check(
-        self
-    ) -> bool:
+        self,
+        return_target_bitboard: bool = False,
+    ) -> bool | BitBoard:
         """
         Method to determine if current player is in check
 
+        Args:
+            return_target_bitboard (bool): If set to True, function returns the target bitboard
+                instead of a bool value. This is useful for preventing castling through check
+
         Returns:
-            result (bool): True if in check, False otherwise
+            bool_result (bool): True if in check, False otherwise
+            bitboard_result (BitBoard): BitBoard containing the locations being targeted by
+                opponent pieces
         """
         to_move = self.board_state["to_move"]
         self.board_state["to_move"] = -1 * to_move  # Change to opponents move for piece targeting
@@ -224,38 +231,56 @@ class Board:
 
         self.board_state["to_move"] = -1 * to_move  # Reset to_move to original state
 
-        print("Target bitboard:")
-        print(target_bitboard)
-        print("King bitboard:")
-        print(king_bitboard)
-        print("Target - king:")
-        print(target_bitboard - king_bitboard)
+        if return_target_bitboard:
+            return target_bitboard
 
         return (target_bitboard - king_bitboard) != target_bitboard
+    
+    def handle_king_moves(
+        self,
+        start_coord: Tuple[int, int],
+        end_coord: Tuple[int, int],
+    ) -> bool:
+        """
+        Helper method to handle king moves, castling cases in particular.
+
+        Args:
+            start_coord (Tuple): Piece start coordinates
+            end_coord (Tuple): Piece end coordinates
+
+        Returns:
+            None
+        """
+        friendly_pieces = self.white_positions \
+            if self.board_state["to_move"] == 1 else self.black_positions
+
+        opponent_pieces = self.black_positions \
+            if self.board_state["to_move"] == 1 else self.white_positions
+        
+        # Check if move is castling move
 
     def handle_pawn_moves(
         self,
         start_coord: Tuple[int, int],
         end_coord: Tuple[int, int],
-        friendly_pieces: dict,
-        opponent_pieces: dict
     ) -> bool:
         """
-        Helper method to handle pawn moves, en-passant cases in particular:
+        Helper method to handle pawn moves, en-passant cases in particular.
             1. Set en_passant bitboard for two square advances
             2. Remove the correct opponent piece for en-passant captures
 
         Args:
             start_coord (Tuple): Piece start coordinates
             end_coord (Tuple): Piece end coordinates
-            friendly_pieces (dict): Locations of friendly pieces
-            opponent_pieces (dict): Locations of opponent pieces
 
         Returns:
-            moved (bool): Represents whether or not pawn move was handled by
-                en passant helper method
+            None
         """
-        moved = False
+        friendly_pieces = self.white_positions \
+            if self.board_state["to_move"] == 1 else self.black_positions
+
+        opponent_pieces = self.black_positions \
+            if self.board_state["to_move"] == 1 else self.white_positions
 
         start_bitboard = BitBoard(coordinates=[start_coord])
         end_bitboard = BitBoard(coordinates=[end_coord])
@@ -269,8 +294,7 @@ class Board:
             self.board_state["en_passant"] = BitBoard(
                 coordinates=[(end_coord[0] + self.board_state["to_move"], end_coord[1])]
             )
-            moved = True
-        elif self.board_state["en_passant"].get(*end_coord):
+        elif self.board_state["en_passant"].is_occupied(*end_coord):
             # Update friendly pieces
             friendly_pieces["p"] -= start_bitboard
             friendly_pieces["p"] += end_bitboard
@@ -280,8 +304,10 @@ class Board:
                 coordinates=[(end_coord[0] + self.board_state["to_move"], end_coord[1])]
             )
             opponent_pieces["p"] -= capture_bitboard
-            moved = True
-        return moved
+        else:
+            # Update friendly pieces
+            friendly_pieces["p"] -= start_bitboard
+            friendly_pieces["p"] += end_bitboard
 
     def move(
         self,
@@ -322,18 +348,20 @@ class Board:
             raise ValueError(
                 f"Illegal move {start_coord}, {end_coord}" + f"\n{str(legal_moves)}"
             )
-
-        pawn_move = False
-
+        
+        # Pawn and king moves need to be handled separately to deal with castling and en passant.
+        # These moves require two pieces on different squares to be updated concurrently
         if selected_piece == "p":
-            pawn_move = self.handle_pawn_moves(
+            self.handle_pawn_moves(
                 start_coord,
                 end_coord,
-                friendly_pieces,
-                opponent_pieces
             )
-
-        if not pawn_move:
+        elif selected_piece == "k":
+            self.handle_king_moves(
+                start_coord,
+                end_coord,
+            )
+        else:
             # Reset en passant bitboard (if last pawn move was a two square advance)
             self.board_state["en_passant"] = BitBoard()
 
