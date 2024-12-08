@@ -428,7 +428,7 @@ class TestBoard(unittest.TestCase):
 
 
     # Test overlap detection
-    def test_overlap_check(self):
+    def test_overlap_detection(self):
         # Create overlapping pieces
         self.board.black_positions["p"].bitboard = int("".join([
             "11111111",
@@ -508,8 +508,16 @@ class TestBoard(unittest.TestCase):
             self.assertFalse(board.in_check())
 
         with self.subTest():
+            board = Board()
             board.move((6, 4), (4, 4))
             self.assertFalse(board.in_check())
+
+        with self.subTest():
+            board = Board()
+            self.assertFalse(board.in_check())
+            self.assertEqual(board.board_state["to_move"], 1)
+            self.assertFalse(board.in_check())
+            self.assertEqual(board.board_state["to_move"], 1)
 
 # ============================== START TEST move() ==============================
     """
