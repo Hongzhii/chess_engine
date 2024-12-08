@@ -258,7 +258,38 @@ class Board:
         opponent_pieces = self.black_positions \
             if self.board_state["to_move"] == 1 else self.white_positions
         
-        # Check if move is castling move
+        start_bitboard = BitBoard(coordinates=[start_coord])
+        end_bitboard = BitBoard(coordinates=[end_coord])
+        
+        if start_coord[1] - end_coord[1] == 2:  # Queenside castling
+            friendly_pieces["k"] -= start_bitboard
+            friendly_pieces["k"] += end_bitboard
+
+            rook_start_bitboard = BitBoard(coordinates=[(start_coord[0], 0)])
+            rook_end_bitboard = BitBoard(coordinates=[(start_coord[0], 3)])
+
+            friendly_pieces["r"] -= rook_start_bitboard
+            friendly_pieces["r"] += rook_end_bitboard
+
+        elif start_coord[1] - end_coord[1] == -1: # Kingside castling
+            friendly_pieces["k"] -= start_bitboard
+            friendly_pieces["k"] += end_bitboard
+
+            rook_start_bitboard = BitBoard(coordinates=[(start_coord[0], 0)])
+            rook_end_bitboard = BitBoard(coordinates=[(start_coord[0], 5)])
+
+            friendly_pieces["r"] -= rook_start_bitboard
+            friendly_pieces["r"] += rook_end_bitboard
+
+        else:
+            friendly_pieces["k"] -= start_bitboard
+            friendly_pieces["k"] += end_bitboard
+
+            for _, piece_bitboard in opponent_pieces.items():
+                piece_bitboard -= end_bitboard
+
+        # Any king move forfeits the right to castle in the future
+        self.board_state["castling"] = "-"
 
     def handle_rook_moves(
         self,
@@ -326,6 +357,10 @@ class Board:
             # Update friendly pieces
             friendly_pieces["p"] -= start_bitboard
             friendly_pieces["p"] += end_bitboard
+
+            # Remove captured pieces
+            for piece in opponent_pieces:
+                opponent_pieces[piece] -= end_bitboard
 
     def move(
         self,
@@ -404,6 +439,8 @@ class Board:
             self.board_state["moves"] += 1
 
         self.board_state["to_move"] = self.board_state["to_move"] * -1
+
+        self.check_overlap()
 
 
     def __str__(self) -> None:

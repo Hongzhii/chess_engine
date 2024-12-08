@@ -685,6 +685,150 @@ class TestBoard(unittest.TestCase):
         for k, v in self.board.black_positions.items():
             self.assertEqual(v.bitboard, EXPECTED_BLACK_POSITION[k])
 
+    def test_move_captures(self):
+        EXPECTED_WHITE_POSITION = {
+            "p": int("".join([
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "11100111",
+                "00000000",
+            ]), 2),
+            "n":int("".join([
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00001000",
+                "00000000",
+                "00000000",
+                "00000010",
+            ]), 2),
+            "b":int("".join([
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00100100",
+            ]), 2),
+            "r":int("".join([
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "10000001",
+            ]), 2),
+            "q":int("".join([
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00010000",
+            ]), 2),
+            "k":int("".join([
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00001000",
+            ]), 2),
+        }
+        EXPECTED_BLACK_POSITION = {
+            "p":int("".join([
+                "00000000",
+                "11100111",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+            ]), 2),
+            "n":int("".join([
+                "00000010",
+                "00000000",
+                "00000000",
+                "00001000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+            ]), 2),
+            "b":int("".join([
+                "00100100",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+            ]), 2),
+            "r":int("".join([
+                "10000001",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+            ]), 2),
+            "q":int("".join([
+                "00010000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+            ]), 2),
+            "k":int("".join([
+                "00001000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+            ]), 2),
+        }
+
+        self.board.move(start_coord=(6, 4), end_coord=(4, 4))
+        self.board.move(start_coord=(1, 4), end_coord=(3, 4))
+        self.board.move(start_coord=(6, 3), end_coord=(4, 3))
+        self.board.move(start_coord=(1, 3), end_coord=(3, 3))
+        self.board.move(start_coord=(7, 1), end_coord=(5, 2))
+        self.board.move(start_coord=(0, 1), end_coord=(2, 2))
+        self.board.move(start_coord=(4, 3), end_coord=(3, 4))
+        self.board.move(start_coord=(3, 3), end_coord=(4, 4))
+        self.board.move(start_coord=(5, 2), end_coord=(4, 4))
+        self.board.move(start_coord=(2, 2), end_coord=(3, 4))
+
+        self.assertEqual(self.board.board_state["to_move"], 1)
+        self.assertEqual(self.board.board_state["moves"], 6)
+
+        for k, v in self.board.white_positions.items():
+            self.assertEqual(v.bitboard, EXPECTED_WHITE_POSITION[k])
+        for k, v in self.board.black_positions.items():
+            self.assertEqual(v.bitboard, EXPECTED_BLACK_POSITION[k])
 
     def test_move_en_passant(self):
         EXPECTED_WHITE_POSITION = {
