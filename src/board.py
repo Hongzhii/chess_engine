@@ -271,11 +271,11 @@ class Board:
             friendly_pieces["r"] -= rook_start_bitboard
             friendly_pieces["r"] += rook_end_bitboard
 
-        elif start_coord[1] - end_coord[1] == -1: # Kingside castling
+        elif start_coord[1] - end_coord[1] == -2: # Kingside castling
             friendly_pieces["k"] -= start_bitboard
             friendly_pieces["k"] += end_bitboard
 
-            rook_start_bitboard = BitBoard(coordinates=[(start_coord[0], 0)])
+            rook_start_bitboard = BitBoard(coordinates=[(start_coord[0], 7)])
             rook_end_bitboard = BitBoard(coordinates=[(start_coord[0], 5)])
 
             friendly_pieces["r"] -= rook_start_bitboard
@@ -285,11 +285,17 @@ class Board:
             friendly_pieces["k"] -= start_bitboard
             friendly_pieces["k"] += end_bitboard
 
-            for _, piece_bitboard in opponent_pieces.items():
-                piece_bitboard -= end_bitboard
+            for piece in opponent_pieces:
+                opponent_pieces[piece] -= end_bitboard
 
-        # Any king move forfeits the right to castle in the future
-        self.board_state["castling"] = "-"
+        # Any king move (non-castling moves included) forfeits the right to castle in the future
+        if self.board_state["to_move"] == 1:
+            self.board_state["castling"] = "--" + self.board_state["castling"][2:]
+        else:
+            self.board_state["castling"] = self.board_state["castling"][:3] + "--"
+
+        if self.board_state["castling"] == "----":
+            self.board_state["castling"] = "-"
 
     def handle_rook_moves(
         self,

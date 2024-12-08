@@ -31,7 +31,7 @@ def _in_range(
 def get_pawn_moves(
     board: Board,
     position: Tuple[int, int],
-    captures_only: bool = False,  # This is to check if a piece is being targeted
+    captures_only: bool = False,  # Moves do not imply captures for pawns
 ) -> BitBoard:
     piece = board.get_piece(position[0], position[1])
     if board.board_state["to_move"] == -1:
@@ -252,6 +252,73 @@ def get_king_moves(
         if _in_range(location[0], location[1]) \
                 and not friendly_bitboard.is_occupied(location[0], location[1]):
             bitboard.set(location[0], location[1])
+
+    # Handle castling moves:
+    if board.in_check() or board.board_state["castling"] == "-":
+        return bitboard
+
+    opponent_target_bitboard = board.in_check(return_target_bitboard=True)
+    combined_pieces = board.get_color_bitboard(1) + board.get_color_bitboard(-1)
+
+    if board.board_state["castling"][0] == "K" and board.board_state["to_move"] == 1:
+        blocked = False
+        targeted = False
+
+        for col_num in [5, 6]:
+            if combined_pieces.is_occupied(7, col_num):
+                blocked = True
+                break
+            if opponent_target_bitboard.is_occupied(7, col_num):
+                targeted = True
+                break
+
+        if not (blocked or targeted):
+            bitboard.set(7, 6)
+
+    elif board.board_state["castling"][1] == "Q" and board.board_state["to_move"] == 1:
+        blocked = False
+        targeted = False
+
+        for col_num in [1, 2, 3]:
+            if combined_pieces.is_occupied(7, col_num):
+                blocked = True
+                break
+            if opponent_target_bitboard.is_occupied(7, col_num) and col_num != 1:
+                targeted = True
+                break
+
+        if not (blocked or targeted):
+            bitboard.set(7, 2)
+
+    if board.board_state["castling"][2] == "k" and board.board_state["to_move"] == -1:
+        blocked = False
+        targeted = False
+
+        for col_num in [5, 6]:
+            if combined_pieces.is_occupied(0, col_num):
+                blocked = True
+                break
+            if opponent_target_bitboard.is_occupied(0, col_num):
+                targeted = True
+                break
+
+        if not (blocked or targeted):
+            bitboard.set(0, 6)
+    
+    elif board.board_state["castling"][3] == "q" and board.board_state["to_move"] == -1:
+        blocked = False
+        targeted = False
+
+        for col_num in [1, 2, 3]:
+            if combined_pieces.is_occupied(0, col_num):
+                blocked = True
+                break
+            if opponent_target_bitboard.is_occupied(0, col_num) and col_num != 1:
+                targeted = True
+                break
+
+        if not (blocked or targeted):
+            bitboard.set(0, 2)
 
     return bitboard
 
