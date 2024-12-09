@@ -1273,28 +1273,36 @@ class TestBoard(unittest.TestCase):
 
     def test_move_rook_castling_kingside_forfeit(self):
         self.board = Board(CASTLING_FEN)
+        self.board.move(start_coord=(7, 7), end_coord=(7, 6))
+        self.assertEqual(self.board.board_state["castling"], "-Qkq")
 
-        self.board.move(start_coord=(7, 7), end_coord=(6, 7))
-        self.board.move(start_coord=(0, 7), end_coord=(1, 7))
-        self.board.move(start_coord=(6, 7), end_coord=(7, 7))
-        self.board.move(start_coord=(1, 7), end_coord=(0, 7))
+        self.board.move(start_coord=(0, 7), end_coord=(0, 6))
+        self.assertEqual(self.board.board_state["castling"], "-Q-q")
+
+        self.board.move(start_coord=(7, 6), end_coord=(7, 7))
+        self.board.move(start_coord=(0, 6), end_coord=(0, 7))
 
         with self.assertRaises(ValueError):
             self.board.move(start_coord=(7, 4), end_coord=(7, 6))
 
         self.board.move(start_coord=(7, 4), end_coord=(7, 2))
+        self.assertEqual(self.board.board_state["castling"], "---q")
 
         with self.assertRaises(ValueError):
             self.board.move(start_coord=(0, 4), end_coord=(0, 6))
 
         self.board.move(start_coord=(0, 4), end_coord=(0, 2))
-
+        self.assertEqual(self.board.board_state["castling"], "-")
 
     def test_move_rook_castling_queenside_forfeit(self):
         self.board = Board(CASTLING_FEN)
 
         self.board.move(start_coord=(7, 0), end_coord=(7, 1))
+        self.assertEqual(self.board.board_state["castling"], "K-kq")
+
         self.board.move(start_coord=(0, 0), end_coord=(0, 1))
+        self.assertEqual(self.board.board_state["castling"], "K-k-")
+
         self.board.move(start_coord=(7, 1), end_coord=(7, 0))
         self.board.move(start_coord=(0, 1), end_coord=(0, 0))
 
@@ -1302,16 +1310,19 @@ class TestBoard(unittest.TestCase):
             self.board.move(start_coord=(7, 4), end_coord=(7, 2))
 
         self.board.move(start_coord=(7, 4), end_coord=(7, 6))
+        self.assertEqual(self.board.board_state["castling"], "--k-")
 
         with self.assertRaises(ValueError):
             self.board.move(start_coord=(0, 4), end_coord=(0, 2))
 
         self.board.move(start_coord=(0, 4), end_coord=(0, 6))
-
+        self.assertEqual(self.board.board_state["castling"], "-")
 
     def test_move_king_castling_forfeit(self):
         self.board = Board(CASTLING_FEN)
 
+        self.board.move(start_coord=(6, 4), end_coord=(5, 4))
+        self.board.move(start_coord=(1, 4), end_coord=(2, 4))
         self.board.move(start_coord=(7, 4), end_coord=(6, 4))
         self.board.move(start_coord=(0, 4), end_coord=(1, 4))
         self.board.move(start_coord=(6, 4), end_coord=(7, 4))

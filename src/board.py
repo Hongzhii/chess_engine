@@ -282,17 +282,22 @@ class Board:
             friendly_pieces["r"] += rook_end_bitboard
 
         else:
+            # Update friendly pieces
             friendly_pieces["k"] -= start_bitboard
             friendly_pieces["k"] += end_bitboard
 
+            # Remove captured pieces
             for piece in opponent_pieces:
                 opponent_pieces[piece] -= end_bitboard
 
         # Any king move (non-castling moves included) forfeits the right to castle in the future
+        if self.board_state["castling"] == "-":
+            return
+
         if self.board_state["to_move"] == 1:
             self.board_state["castling"] = "--" + self.board_state["castling"][2:]
         else:
-            self.board_state["castling"] = self.board_state["castling"][:3] + "--"
+            self.board_state["castling"] = self.board_state["castling"][:2] + "--"
 
         if self.board_state["castling"] == "----":
             self.board_state["castling"] = "-"
@@ -312,7 +317,60 @@ class Board:
         Returns:
             None
         """
-        pass
+        friendly_pieces = self.white_positions \
+            if self.board_state["to_move"] == 1 else self.black_positions
+
+        opponent_pieces = self.black_positions \
+            if self.board_state["to_move"] == 1 else self.white_positions
+
+        start_bitboard = BitBoard(coordinates=[start_coord])
+        end_bitboard = BitBoard(coordinates=[end_coord])
+
+        # Update friendly pieces
+        friendly_pieces["r"] -= start_bitboard
+        friendly_pieces["r"] += end_bitboard
+
+        # Remove captured pieces
+        for piece in opponent_pieces:
+            opponent_pieces[piece] -= end_bitboard
+
+        # Modify the castling state
+        if self.board_state["castling"] == "-":
+            return
+        
+        castling_state = self.board_state["castling"]
+        
+        if start_coord == (7, 7) and self.board_state["castling"][0] == "K":
+            self.board_state["castling"] = "".join([
+                "-",
+                castling_state[1],
+                castling_state[2],
+                castling_state[3],
+            ])
+        elif start_coord == (7, 0) and self.board_state["castling"][1] == "Q":
+            self.board_state["castling"] = "".join([
+                castling_state[0],
+                "-",
+                castling_state[2],
+                castling_state[3],
+            ])
+        elif start_coord == (0, 7) and self.board_state["castling"][2] == "k":
+            self.board_state["castling"] = "".join([
+                castling_state[0],
+                castling_state[1],
+                "-",
+                castling_state[3],
+            ])
+        elif start_coord == (0, 0) and self.board_state["castling"][3] == "q":
+            self.board_state["castling"] = "".join([
+                castling_state[0],
+                castling_state[1],
+                castling_state[2],
+                "-"
+            ])
+        
+        if self.board_state["castling"] == "----":
+            self.board_state["castling"] = "-"
 
     def handle_pawn_moves(
         self,
