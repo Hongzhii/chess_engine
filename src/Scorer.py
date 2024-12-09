@@ -9,7 +9,7 @@ class Scorer:
     
     def __init__(
         self,
-        piece_values: dict
+        piece_values: Dict
     ) -> None:
         self.piece_values = piece_values
 

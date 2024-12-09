@@ -2,8 +2,6 @@ from __future__ import annotations
 from typing import Tuple
 from src.bitboard import BitBoard
 
-# from resources.my_types import Board, BitBoard
-
 """
 File containing helper funcitons to retrieve legal moves for a given piece on a board
 """
@@ -304,7 +302,7 @@ def get_king_moves(
 
         if not (blocked or targeted):
             bitboard.set(0, 6)
-    
+
     if board.board_state["castling"][3] == "q" and board.board_state["to_move"] == -1:
         blocked = False
         targeted = False

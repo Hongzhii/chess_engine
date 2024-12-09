@@ -1,5 +1,3 @@
-import copy
-
 from typing import Optional, List, Tuple
 
 
@@ -29,14 +27,14 @@ class BitBoard:
                     assert 0 <= coord[0] and coord[0] <= 7
                     assert 0 <= coord[1] and coord[1] <= 7
                     self.set(coord[0], coord[1])
-                except AssertionError as e:
+                except AssertionError:
                     print(f"Error: invalid coordinates {coord}, skipping...")
         else:
             self.bitboard = int('0b0', 2)
 
     def __eq__(self, bitboard: 'BitBoard') -> bool:
         return self.bitboard == bitboard.bitboard
-    
+
     def __ne__(self, bitboard: 'BitBoard') -> bool:
         return self.bitboard != bitboard.bitboard
 

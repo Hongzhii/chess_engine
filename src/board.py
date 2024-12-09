@@ -1,6 +1,6 @@
 from typing import Tuple, Dict
 
-import resources.FENs as FENs
+from resources import FENs
 from resources.pieces import piece_tokens
 
 from src import parsers
@@ -167,7 +167,7 @@ class Board:
                 return piece.upper()
 
         return " "
-    
+
     def in_check(
         self,
         return_target_bitboard: bool = False,
@@ -236,7 +236,7 @@ class Board:
             return target_bitboard
 
         return (target_bitboard - king_bitboard) != target_bitboard
-    
+
     def handle_king_moves(
         self,
         start_coord: Tuple[int, int],
@@ -257,10 +257,10 @@ class Board:
 
         opponent_pieces = self.black_positions \
             if self.board_state["to_move"] == 1 else self.white_positions
-        
+
         start_bitboard = BitBoard(coordinates=[start_coord])
         end_bitboard = BitBoard(coordinates=[end_coord])
-        
+
         if start_coord[1] - end_coord[1] == 2:  # Queenside castling
             friendly_pieces["k"] -= start_bitboard
             friendly_pieces["k"] += end_bitboard
@@ -337,9 +337,9 @@ class Board:
         # Modify the castling state
         if self.board_state["castling"] == "-":
             return
-        
+
         castling_state = self.board_state["castling"]
-        
+
         if start_coord == (7, 7) and self.board_state["castling"][0] == "K":
             self.board_state["castling"] = "".join([
                 "-",
@@ -368,7 +368,7 @@ class Board:
                 castling_state[2],
                 "-"
             ])
-        
+
         if self.board_state["castling"] == "----":
             self.board_state["castling"] = "-"
 
@@ -421,7 +421,7 @@ class Board:
         elif end_coord[0] == 0 or end_coord[0] == 7:  # Promotions
             if promotion_piece_type is None:
                 raise ValueError("Need to specify piece type for promotion move: n, b, r or q")
-            
+
             # Update friendly pieces
             friendly_pieces["p"] -= start_bitboard
             friendly_pieces[promotion_piece_type] += end_bitboard
@@ -459,8 +459,8 @@ class Board:
 
         piece_found = False
 
-        for selected_piece in friendly_pieces:
-            if friendly_pieces[selected_piece].is_occupied(*start_coord):
+        for _, friendly_piece_bitboard in friendly_pieces.items():
+            if friendly_piece_bitboard.is_occupied(*start_coord):
                 piece_found = True
                 break
 
@@ -478,7 +478,7 @@ class Board:
             raise ValueError(
                 f"Illegal move {start_coord}, {end_coord}" + f"\n{str(legal_moves)}"
             )
-        
+
         # Pawn and king moves need to be handled separately to deal with castling and en passant.
         # These moves require two pieces on different squares to be updated concurrently
         if selected_piece == "p":
@@ -617,4 +617,3 @@ class Board:
             raise ValueError(f"Expected positive integer for 'moves', instead got: {num_moves}")
 
         return num_moves
-

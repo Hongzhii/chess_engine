@@ -1,5 +1,3 @@
-import sys
-
 from typing import Tuple
 # from resources.my_types import Board
 
