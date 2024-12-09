@@ -64,7 +64,6 @@ def parse_algebraic(
 
     return piece_type, end_square
 
-
 def alphanumeric_to_index(position: str) -> Tuple[int, int]:
     """
     Helper function to turn positions from alphanumeric form to numerical
@@ -79,10 +78,7 @@ def alphanumeric_to_index(position: str) -> Tuple[int, int]:
     Throws:
         ValueError: For alphanumeric coorinate inputs in invalid format
     """
-    if position == "-":
-        return None
-
-    if len(position) != 2:
+    if len(position) not in {2, 4}:
         raise ValueError(f"Invalid input {position} with input length: {len(position)}")
 
     file = position[0]
@@ -95,4 +91,9 @@ def alphanumeric_to_index(position: str) -> Tuple[int, int]:
 
     file_no = FILE_TO_NUM[file]
 
-    return (8 - int(rank), file_no)
+    if "=" in position:
+        promotion_piece_type = position.split("=")[-1].lower()
+    else:
+        promotion_piece_type = None
+
+    return (8 - int(rank), file_no), promotion_piece_type

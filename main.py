@@ -24,8 +24,6 @@ if __name__ == "__main__":
 
         friendly_pieces = board.get_color_bitboard(to_move)
 
-        print("King-side castle: O-O")
-        print("Queen-side castle: O-O-O")
         print("Enter 'q' to quit")
 
         print("="*40)
@@ -43,7 +41,7 @@ if __name__ == "__main__":
             if target_coord == "debug":
                 break
             try:
-                target_coord = alphanumeric_to_index(target_coord)
+                target_coord, _ = alphanumeric_to_index(target_coord)
                 break
             except ValueError as e:
                 print(e)
@@ -61,7 +59,7 @@ if __name__ == "__main__":
             if destination_coord == "debug":
                 break
             try:
-                destination_coord = alphanumeric_to_index(destination_coord)
+                destination_coord, promotion_piece_type = alphanumeric_to_index(destination_coord)
                 break
             except ValueError as e:
                 print(e)
@@ -75,7 +73,8 @@ if __name__ == "__main__":
         try:
             board.move(
                 start_coord=target_coord,
-                end_coord=destination_coord
+                end_coord=destination_coord,
+                promotion_piece_type=promotion_piece_type
             )
         except ValueError as e:
             ERROR_MESSAGE = str(e)
