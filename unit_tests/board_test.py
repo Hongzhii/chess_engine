@@ -10,6 +10,7 @@ from resources.FENs import (
     ILLEGAL_CASTLING_THROUGH_CHECK_2_FEN,
     ILLEGAL_CASTLING_BLACK_IN_CHECK,
     ILLEGAL_CASTLING_WHITE_IN_CHECK,
+    PROMOTION_FEN,
 )
 from resources.starting_position_string import STARTING_POSITION_STRING_OUTPUT
 
@@ -1403,6 +1404,155 @@ class TestBoard(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.board.move(start_coord=(0, 4), end_coord=(0, 6))
+
+    def test_move_promotion(self):
+        EXPECTED_WHITE_POSITION = {
+            "p": int("".join([
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+            ]), 2),
+            "n": int("".join([
+                "10000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+            ]), 2),
+            "b": int("".join([
+                "01000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+            ]), 2),
+            "r": int("".join([
+                "00000010",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+            ]), 2),
+            "q": int("".join([
+                "00000001",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+            ]), 2),
+            "k": int("".join([
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00001000",
+                "00000000",
+            ]), 2),
+        }
+        EXPECTED_BLACK_POSITION = {
+            "p": int("".join([
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+            ]), 2),
+            "n": int("".join([
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "10000000",
+            ]), 2),
+            "b": int("".join([
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "01000000",
+            ]), 2),
+            "r": int("".join([
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000010",
+            ]), 2),
+            "q": int("".join([
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000001",
+            ]), 2),
+            "k": int("".join([
+                "00000000",
+                "00001000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+                "00000000",
+            ]), 2),
+        }
+
+        self.board = Board(PROMOTION_FEN)
+
+        with self.assertRaises(ValueError):
+            self.board.move((1, 0), (0, 0))
+
+        self.board.move((1, 0), (0, 0), "n")
+        self.board.move((6, 0), (7, 0), "n")
+        self.board.move((1, 1), (0, 1), "b")
+        self.board.move((6, 1), (7, 1), "b")
+        self.board.move((1, 6), (0, 6), "r")
+        self.board.move((6, 6), (7, 6), "r")
+        self.board.move((1, 7), (0, 7), "q")
+        self.board.move((6, 7), (7, 7), "q")
+
+        self.assertEqual(self.board.board_state["to_move"], 1)
+        self.assertEqual(self.board.board_state["moves"], 5)
+
+        for k, v in self.board.white_positions.items():
+            self.assertEqual(v.bitboard, EXPECTED_WHITE_POSITION[k])
+        for k, v in self.board.black_positions.items():
+            self.assertEqual(v.bitboard, EXPECTED_BLACK_POSITION[k])
+
 # ============================== END TEST move() ==============================
 
     # Test board visualization

@@ -376,6 +376,7 @@ class Board:
         self,
         start_coord: Tuple[int, int],
         end_coord: Tuple[int, int],
+        promotion_piece_type: str,
     ) -> None:
         """
         Helper method to handle pawn moves, en-passant cases in particular.
@@ -417,6 +418,17 @@ class Board:
                 coordinates=[(end_coord[0] + self.board_state["to_move"], end_coord[1])]
             )
             opponent_pieces["p"] -= capture_bitboard
+        elif end_coord[0] == 0 or end_coord[0] == 7:  # Promotions
+            if promotion_piece_type is None:
+                raise ValueError("Need to specify piece type for promotion move: n, b, r or q")
+            
+            # Update friendly pieces
+            friendly_pieces["p"] -= start_bitboard
+            friendly_pieces[promotion_piece_type] += end_bitboard
+
+            # Remove captured pieces
+            for piece in opponent_pieces:
+                opponent_pieces[piece] -= end_bitboard
         else:
             # Update friendly pieces
             friendly_pieces["p"] -= start_bitboard
@@ -429,7 +441,8 @@ class Board:
     def move(
         self,
         start_coord: Tuple[int, int],
-        end_coord: Tuple[int, int]
+        end_coord: Tuple[int, int],
+        promotion_piece_type: str = None,
     ) -> None:
         """
         Verifies and executes move on the board
@@ -472,6 +485,7 @@ class Board:
             self.handle_pawn_moves(
                 start_coord,
                 end_coord,
+                promotion_piece_type,
             )
         elif selected_piece == "k":
             self.handle_king_moves(
