@@ -1,7 +1,7 @@
 import unittest
 
-from src.board import Board
-from src import piece_handler
+from src.chess_board.board import Board
+from src.chess_board import piece_handler
 
 from resources import FENs
 

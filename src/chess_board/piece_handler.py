@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Tuple
-from src.bitboard import BitBoard
+
+from src.chess_board.bitboard import BitBoard
 
 """
 File containing helper funcitons to retrieve legal moves for a given piece on a board

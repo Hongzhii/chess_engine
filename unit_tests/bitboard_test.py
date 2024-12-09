@@ -1,6 +1,6 @@
 import unittest
 
-from src.bitboard import BitBoard
+from src.chess_board.bitboard import BitBoard
 
 class TestBitBoard(unittest.TestCase):
     def setUp(self):

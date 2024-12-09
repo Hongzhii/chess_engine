@@ -1,6 +1,6 @@
 import unittest
 
-from src.board import Board
+from src.chess_board.board import Board
 from resources.FENs import (
     STARTING_FEN,
     FOURKNIGHTS_FEN,

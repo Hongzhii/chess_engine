@@ -3,9 +3,9 @@ from typing import Tuple, Dict
 from resources import FENs
 from resources.pieces import piece_tokens
 
-from src import parsers
-from src.bitboard import BitBoard
-from src import piece_handler
+from src.chess_board import parsers
+from src.chess_board.bitboard import BitBoard
+from src.chess_board import piece_handler
 
 """
 -----------------

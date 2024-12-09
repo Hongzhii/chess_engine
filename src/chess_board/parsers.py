@@ -1,5 +1,4 @@
 from typing import Tuple
-# from resources.my_types import Board
 
 FILES = ["a", "b", "c", "d", "e", "f", "g", "h"]
 FILE_TO_NUM = {FILES[i]: i for i in range(len(FILES))}

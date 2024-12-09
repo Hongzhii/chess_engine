@@ -1,6 +1,6 @@
 import unittest
 
-from src import parsers
+from src.chess_board import parsers
 
 class TestParser(unittest.TestCase):
     def test_alphanumeric(self):
