@@ -1,5 +1,5 @@
-from src.board import Board
-from src.parsers import alphanumeric_to_index
+from src.chess_board.board import Board
+from src.chess_board.parsers import alphanumeric_to_index
 
 from resources import FENs
 
