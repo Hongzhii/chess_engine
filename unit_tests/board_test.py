@@ -10,6 +10,7 @@ from resources.FENs import (
     ILLEGAL_CASTLING_THROUGH_CHECK_2_FEN,
     ILLEGAL_CASTLING_BLACK_IN_CHECK,
     ILLEGAL_CASTLING_WHITE_IN_CHECK,
+    ILLEGAL_CASTLING_FUNKY,
     PROMOTION_FEN,
 )
 from resources.starting_position_string import STARTING_POSITION_STRING_OUTPUT
@@ -1404,6 +1405,25 @@ class TestBoard(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.board.move(start_coord=(0, 4), end_coord=(0, 6))
+
+    def test_move_castle_funky(self):
+        self.board = Board(ILLEGAL_CASTLING_FUNKY)
+
+        self.board.move(start_coord=(2, 6), end_coord=(0, 7))
+        with self.assertRaises(ValueError):
+            self.board.move(start_coord=(0, 4), end_coord=(0, 6))
+
+        self.board.move(start_coord=(5, 6), end_coord=(7, 7))
+        with self.assertRaises(ValueError):
+            self.board.move(start_coord=(7, 4), end_coord=(7, 6))
+
+        self.board.move(start_coord=(2, 1), end_coord=(0, 0))
+        with self.assertRaises(ValueError):
+            self.board.move(start_coord=(0, 4), end_coord=(0, 2))
+
+        self.board.move(start_coord=(5, 1), end_coord=(7, 0))
+        with self.assertRaises(ValueError):
+            self.board.move(start_coord=(7, 4), end_coord=(7, 2))
 
     def test_move_promotion(self):
         EXPECTED_WHITE_POSITION = {

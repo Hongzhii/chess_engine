@@ -302,76 +302,6 @@ class Board:
         if self.board_state["castling"] == "----":
             self.board_state["castling"] = "-"
 
-    def handle_rook_moves(
-        self,
-        start_coord: Tuple[int, int],
-        end_coord: Tuple[int, int],
-    ) -> None:
-        """
-        Helper method to handle rook moves, for updating castling state.
-
-        Args:
-            start_coord (Tuple): Piece start coordinates
-            end_coord (Tuple): Piece end coordinates
-
-        Returns:
-            None
-        """
-        friendly_pieces = self.white_positions \
-            if self.board_state["to_move"] == 1 else self.black_positions
-
-        opponent_pieces = self.black_positions \
-            if self.board_state["to_move"] == 1 else self.white_positions
-
-        start_bitboard = BitBoard(coordinates=[start_coord])
-        end_bitboard = BitBoard(coordinates=[end_coord])
-
-        # Update friendly pieces
-        friendly_pieces["r"] -= start_bitboard
-        friendly_pieces["r"] += end_bitboard
-
-        # Remove captured pieces
-        for piece in opponent_pieces:
-            opponent_pieces[piece] -= end_bitboard
-
-        # Modify the castling state
-        if self.board_state["castling"] == "-":
-            return
-
-        castling_state = self.board_state["castling"]
-
-        if start_coord == (7, 7) and self.board_state["castling"][0] == "K":
-            self.board_state["castling"] = "".join([
-                "-",
-                castling_state[1],
-                castling_state[2],
-                castling_state[3],
-            ])
-        elif start_coord == (7, 0) and self.board_state["castling"][1] == "Q":
-            self.board_state["castling"] = "".join([
-                castling_state[0],
-                "-",
-                castling_state[2],
-                castling_state[3],
-            ])
-        elif start_coord == (0, 7) and self.board_state["castling"][2] == "k":
-            self.board_state["castling"] = "".join([
-                castling_state[0],
-                castling_state[1],
-                "-",
-                castling_state[3],
-            ])
-        elif start_coord == (0, 0) and self.board_state["castling"][3] == "q":
-            self.board_state["castling"] = "".join([
-                castling_state[0],
-                castling_state[1],
-                castling_state[2],
-                "-"
-            ])
-
-        if self.board_state["castling"] == "----":
-            self.board_state["castling"] = "-"
-
     def handle_pawn_moves(
         self,
         start_coord: Tuple[int, int],
@@ -437,6 +367,57 @@ class Board:
             # Remove captured pieces
             for piece in opponent_pieces:
                 opponent_pieces[piece] -= end_bitboard
+    
+    def check_rook_positions(
+        self,
+    ) -> None:
+        """
+        Helper method to check rook status and update castling board state accordingly.
+
+        Args:
+            None
+        
+        Returns:
+            None
+        """
+        if self.board_state["castling"] == "-":
+            return
+        
+        castling_state = self.board_state["castling"]
+        
+        if not self.white_positions["r"].is_occupied(7, 7):
+            castling_state = "".join([
+                "-",
+                castling_state[1],
+                castling_state[2],
+                castling_state[3],
+            ])
+        if not self.white_positions["r"].is_occupied(7, 0):
+            castling_state = "".join([
+                castling_state[0],
+                "-",
+                castling_state[2],
+                castling_state[3],
+            ])
+        if not self.black_positions["r"].is_occupied(0, 7):
+            castling_state = "".join([
+                castling_state[0],
+                castling_state[1],
+                "-",
+                castling_state[3],
+            ])
+        if not self.black_positions["r"].is_occupied(0, 0):
+            castling_state = "".join([
+                castling_state[0],
+                castling_state[1],
+                castling_state[2],
+                "-",
+            ])
+
+        if castling_state == "----":
+            castling_state = "-"
+        
+        self.board_state["castling"] = castling_state
 
     def move(
         self,
@@ -459,8 +440,8 @@ class Board:
 
         piece_found = False
 
-        for _, friendly_piece_bitboard in friendly_pieces.items():
-            if friendly_piece_bitboard.is_occupied(*start_coord):
+        for selected_piece, piece_bitboard in friendly_pieces.items():
+            if piece_bitboard.is_occupied(*start_coord):
                 piece_found = True
                 break
 
@@ -492,15 +473,7 @@ class Board:
                 start_coord,
                 end_coord,
             )
-        elif selected_piece == "r":
-            self.handle_rook_moves(
-                start_coord,
-                end_coord,
-            )
         else:
-            # Reset en passant bitboard (if last pawn move was a two square advance)
-            self.board_state["en_passant"] = BitBoard()
-
             start_bitboard = BitBoard(coordinates=[start_coord])
             end_bitboard = BitBoard(coordinates=[end_coord])
 
@@ -512,6 +485,12 @@ class Board:
             # Update opponent piece (if any)
             for piece in opponent_pieces:
                 opponent_pieces[piece] -= end_bitboard
+
+        self.check_rook_positions()
+
+        if selected_piece != "p":
+            # Reset en passant bitboard (if last pawn move was a two square advance)
+            self.board_state["en_passant"] = BitBoard()
 
         if self.board_state["to_move"] == -1:  # Updated once every "full" move
             self.board_state["moves"] += 1
