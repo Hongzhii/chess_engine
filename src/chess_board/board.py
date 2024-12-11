@@ -1,4 +1,6 @@
-from typing import Tuple, Dict
+import copy
+
+from typing import Tuple, Dict, List
 
 from resources import FENs
 from resources.pieces import piece_tokens
@@ -431,6 +433,10 @@ class Board:
         Args:
             start_coords (Tuple): Tuple specifying start coordinates
             end_coords (Tuple): Tuple specifying end coordinates
+            promotion_piece_type (str): String specifying which piece to promote to, if applicable
+
+        Returns:
+            None
         """
         friendly_pieces = self.white_positions \
             if self.board_state["to_move"] == 1 else self.black_positions
@@ -499,6 +505,83 @@ class Board:
 
         self.check_overlap()
 
+    def check_move(
+        self,
+        start_coord: Tuple[int, int],
+        end_coord: Tuple[int, int],
+        promotion_piece_type: str = None,
+    ) -> bool:
+        """
+        Returns True if a move is legal, False otherwise
+
+        Args:
+            start_coords (Tuple): Tuple specifying start coordinates
+            end_coords (Tuple): Tuple specifying end coordinates
+            promotion_piece_type (str): String specifying which piece to promote to, if applicable
+
+        Returns:
+            result (bool): Boolean value specifying whether or not move is legal
+        """
+        # Create a new copy of the board to execute the move on
+        temp_board = copy.deepcopy(self)
+
+        # Execute_move
+        temp_board.move(
+            start_coord,
+            end_coord,
+            promotion_piece_type,
+        )
+        temp_board.board_state["to_move"] = self.board_state["to_move"]
+
+        return not temp_board.in_check()
+
+    def get_legal_moves(
+        self
+    ) -> List[Tuple[Tuple, Tuple, str]]:
+        """
+        Returns a list of legal moves on the given board in the form of a tuple.
+
+        Returns:
+            legal_moves: Tuple in the form -> (<start_coord>, <end_coord>, <promotion_piece_type>)
+        """
+
+        pseudo_legal_moves = []
+
+        friendly_pieces = self.white_positions if self.board_state["to_move"] == 1 \
+            else self.black_positions
+
+        for piece, piece_bitboard in friendly_pieces.items():
+            piece_coordinates = piece_bitboard.get_coordinates()
+
+            for coord in piece_coordinates:
+                end_coords = piece_handler.get_moves(
+                    board=self,
+                    position=coord,
+                    piece_type=piece,
+                ).get_coordinates()
+
+                pseudo_legal_moves += zip(
+                    [coord] * len(end_coords),
+                    end_coords,
+                    [None] * len(end_coords),
+                )
+        
+        for i, move in enumerate(pseudo_legal_moves):
+            if (move[1][0] == 0 or move[1][0] == 7) and move[2] is not None:
+                promotion_move = pseudo_legal_moves.pop(i)
+
+                all_promotions = [
+                    (promotion_move[0], promotion_move[1], "b"),
+                    (promotion_move[0], promotion_move[1], "n"),
+                    (promotion_move[0], promotion_move[1], "r"),
+                    (promotion_move[0], promotion_move[1], "q"),
+                ]
+
+                pseudo_legal_moves += all_promotions
+
+        legal_move_mask = [self.check_move(*move) for move in pseudo_legal_moves]
+
+        return [move for move, legal in zip(pseudo_legal_moves, legal_move_mask) if legal]
 
     def __str__(self) -> None:
         self.check_overlap()
