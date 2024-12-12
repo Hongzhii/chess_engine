@@ -1575,6 +1575,13 @@ class TestBoard(unittest.TestCase):
 
 # ============================== END TEST move() ==============================
 
+    # Test get legal moves function
+    def test_get_legal_moves(self):
+        self.assertEqual(
+            len(self.board.get_legal_moves()),
+            20,
+        )
+
     # Test board visualization
     def test_str_conversion(self):
         print(str(self.board))

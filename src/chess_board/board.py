@@ -579,9 +579,7 @@ class Board:
 
                 pseudo_legal_moves += all_promotions
 
-        legal_move_mask = [self.check_move(*move) for move in pseudo_legal_moves]
-
-        return [move for move, legal in zip(pseudo_legal_moves, legal_move_mask) if legal]
+        return [move for move in pseudo_legal_moves if self.check_move(*move)]
 
     def __str__(self) -> None:
         self.check_overlap()
