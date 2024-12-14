@@ -2,33 +2,12 @@ import copy
 
 from typing import Tuple, Dict, List
 
-from resources import FENs
+from resources import FENs, hash_keys
 from resources.pieces import piece_tokens
 
 from src.chess_board import parsers
 from src.chess_board.bitboard import BitBoard
 from src.chess_board import piece_handler
-
-"""
------------------
-|R|N|B|Q|K|B|N|R|
--------------------------
-|BP|BP|BP|BP|BP|BP|BP|BP|
--------------------------
-|  |  |  |  |  |  |  |  |
--------------------------
-|  |  |  |  |  |  |  |  |
--------------------------
-|  |  |  |  |  |  |  |  |
--------------------------
-|  |  |  |  |  |  |  |  |
--------------------------
-|WP|WP|WP|WP|WP|WP|WP|WP|
--------------------------
-|WR|WN|WB|WQ|WK|WB|WN|WR|
--------------------------
-"""
-
 
 class Board:
     """
@@ -580,6 +559,44 @@ class Board:
                 pseudo_legal_moves += all_promotions
 
         return [move for move in pseudo_legal_moves if self.check_move(*move)]
+    
+    def hash(self):
+        """
+        Returns the hash value of the current position using Zobrist hash keys specified in the
+        resources directory.
+
+        Returns:
+            hash (int): Hashed value of the board position
+        """
+        hash = 0
+        hash_key_dict = hash_keys.HASH_KEYS
+
+        # Process white piece positions
+        for piece, piece_bitboard in self.white_positions.items():
+            for coord in piece_bitboard.get_coordinates():
+                coord_key = f"{coord[0]}{coord[1]}"
+                hash = hash ^ hash_key_dict["position"][coord_key][piece]
+
+        # Process black piece positions
+        for piece, piece_bitboard in self.black_positions.items():
+            for coord in piece_bitboard.get_coordinates():
+                coord_key = f"{coord[0]}{coord[1]}"
+                hash = hash ^ hash_key_dict["position"][coord_key][piece]
+
+        # Process castling state
+        hash = hash ^ hash_key_dict["castling"][self.board_state["castling"]]
+
+        # Process en passant
+        en_passant_square = self.board_state["en_passant"].get_coordinates()
+
+        if len(en_passant_square) == 1:
+            hash = hash ^ hash_key_dict["en_passant"][en_passant_square[0][1]]
+
+        # Process to_move state
+        if self.board_state["to_move"] == 1:
+            hash = hash ^ hash_key_dict["to_move"]
+
+        return hash
 
     def __str__(self) -> None:
         self.check_overlap()

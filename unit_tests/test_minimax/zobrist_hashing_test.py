@@ -21,6 +21,4 @@ class TestZobristHashes(unittest.TestCase):
 
         hash_keys.append(self.hash_key_mapping["to_move"])
 
-        print(hash_keys)
-
         self.assertTrue(len(set(hash_keys)) == len(hash_keys))
